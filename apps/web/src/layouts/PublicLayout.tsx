@@ -70,11 +70,14 @@ export const PublicLayout: React.FC = () => {
         className="sticky top-0 z-40 bg-brand-linen/95 dark:bg-brand-charcoal/95 backdrop-blur-md border-b border-brand-sand-dark/20 dark:border-brand-sand-dark/10 px-6 lg:px-12 py-4 flex items-center justify-between transition-colors duration-300"
       >
         <div className="flex items-center gap-8">
-          <Link to="/" className="font-serif text-2xl font-bold tracking-wider text-brand-walnut dark:text-brand-linen flex items-center gap-3">
-            <img src="/logo.png" alt="HommieSpace Logo" className="w-8 h-8 object-contain rounded-full border border-brand-sand-dark/10" />
-            <span>HOMMIE<span className="text-brand-terracotta">SPACE</span></span>
+          <Link to="/" className="font-serif text-2xl font-bold tracking-wider flex items-center gap-3">
+            <img src="/logo.png" alt="HommieSpace Logo" className="w-8 h-8 object-contain rounded-full border border-brand-sand-dark/20 dark:border-brand-sand-dark/40 shadow-sm" />
+            <span className="font-serif text-2xl font-black tracking-wider">
+              <span className="text-brand-walnut dark:text-white font-extrabold">HOMMIE</span>
+              <span className="text-brand-terracotta font-extrabold">SPACE</span>
+            </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold uppercase tracking-widest text-brand-walnut/80 dark:text-brand-linen/80">
+          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold uppercase tracking-widest text-brand-walnut dark:text-white">
             <Link to="/products" className="relative py-1 hover:text-brand-terracotta transition-colors after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-full after:bg-brand-terracotta after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left">Catalog</Link>
             <Link to="/products?category=furniture" className="relative py-1 hover:text-brand-terracotta transition-colors after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-full after:bg-brand-terracotta after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left">Furniture</Link>
             <Link to="/products?category=lighting" className="relative py-1 hover:text-brand-terracotta transition-colors after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-full after:bg-brand-terracotta after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left">Lighting</Link>
@@ -85,11 +88,11 @@ export const PublicLayout: React.FC = () => {
 
         <div className="flex items-center gap-6">
           {/* Global Search Bar */}
-          <div className="hidden sm:flex items-center gap-2 border border-brand-sand-dark/30 dark:border-brand-sand-dark/15 bg-brand-linen-light dark:bg-brand-charcoal/30 px-3 py-1.5 transition-all">
+          <div className="hidden sm:flex items-center gap-2 border border-brand-sand-dark/40 dark:border-brand-sand-dark/40 bg-brand-linen-light dark:bg-brand-charcoal px-3 py-1.5 transition-all">
             <input 
               type="text" 
               placeholder="Search catalog..." 
-              className="bg-transparent text-xs text-brand-walnut dark:text-brand-linen focus:outline-none w-32 md:w-40 placeholder:text-brand-clay/60 border-none font-sans"
+              className="bg-transparent text-xs text-brand-walnut dark:text-white focus:outline-none w-32 md:w-40 placeholder:text-brand-clay/80 border-none font-sans"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   const val = (e.target as HTMLInputElement).value;
@@ -97,47 +100,54 @@ export const PublicLayout: React.FC = () => {
                 }
               }}
             />
-            <svg className="w-4 h-4 text-brand-clay" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-brand-clay dark:text-brand-sand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
 
-          {/* Light/Dark Theme Switcher */}
-          <button 
-            onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
-            className="text-brand-walnut dark:text-brand-linen hover:text-brand-terracotta transition-colors flex items-center p-1 cursor-pointer hover:scale-110 active:scale-90 duration-200"
-            title="Toggle theme"
-          >
-            {theme === 'light' ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m2.828 9.9a5 5 0 117.072-7.072 5 5 0 01-7.072 7.072z" />
-              </svg>
-            )}
-          </button>
+          {/* Theme & Cart Action Capsule Container */}
+          <div className="flex items-center gap-3 bg-brand-sand-light dark:bg-brand-walnut/90 border border-brand-sand-dark/50 dark:border-brand-terracotta/40 px-3.5 py-1.5 rounded-full shadow-md transition-all duration-300">
+            {/* Light/Dark Theme Switcher */}
+            <button 
+              onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+              className="flex items-center p-1 cursor-pointer hover:scale-110 active:scale-90 duration-200"
+              title="Toggle theme"
+            >
+              {theme === 'light' ? (
+                <svg className="w-5 h-5 text-brand-walnut" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-amber-400 dark:text-amber-300 drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m2.828 9.9a5 5 0 117.072-7.072 5 5 0 01-7.072 7.072z" />
+                </svg>
+              )}
+            </button>
 
-          <button 
-            onClick={() => setIsCartOpen(true)}
-            className="relative text-brand-walnut dark:text-brand-linen hover:text-brand-terracotta transition-colors flex items-center hover:scale-105 active:scale-95 duration-200"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            {totalCount > 0 && (
-              <motion.span 
-                key={totalCount}
-                initial={{ scale: 0.4 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 450, damping: 10 }}
-                className="absolute -top-2 -right-2 bg-brand-terracotta text-brand-linen type-only text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold"
-              >
-                {totalCount}
-              </motion.span>
-            )}
-          </button>
+            <span className="w-[1px] h-4 bg-brand-sand-dark/40 dark:bg-brand-sand-dark/30" />
+
+            {/* Cart Drawer Trigger */}
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              className="relative text-brand-walnut dark:text-white hover:text-brand-terracotta transition-colors flex items-center p-1 hover:scale-105 active:scale-95 duration-200 cursor-pointer"
+              title="View Cart"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              {totalCount > 0 && (
+                <motion.span 
+                  key={totalCount}
+                  initial={{ scale: 0.4 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 10 }}
+                  className="absolute -top-1.5 -right-2 bg-brand-terracotta text-brand-linen type-only text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-sm"
+                >
+                  {totalCount}
+                </motion.span>
+              )}
+            </button>
+          </div>
 
           {/* Hamburger Menu Button */}
           <button 
