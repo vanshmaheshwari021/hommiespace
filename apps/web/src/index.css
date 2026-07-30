@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brand-linen text-brand-walnut dark:bg-brand-charcoal dark:text-brand-linen font-sans antialiased min-h-screen selection:bg-brand-sand-dark selection:text-brand-walnut transition-colors duration-300;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif text-brand-walnut dark:text-brand-linen tracking-wide transition-colors duration-300;
+  }
+}
+
+/* Custom global animations and scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-brand-linen-dark;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-brand-clay/35 transition-colors duration-300;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-brand-clay/60;
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes marquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes move-along-path {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+.animate-motion-item {
+  position: absolute;
+  left: 0;
+  top: 0;
+  offset-path: path('M -250,200 C 200,10 650,370 1100,200 C 1550,10 2000,370 2450,200');
+  animation: move-along-path 32s linear infinite;
+  offset-rotate: auto; /* auto-align rotation with the tangent of the path */
+}
+
+.animate-motion-item:hover {
+  animation-play-state: paused;
+}
