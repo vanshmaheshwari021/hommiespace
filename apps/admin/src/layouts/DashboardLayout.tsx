@@ -7,6 +7,16 @@ export const DashboardLayout: React.FC = () => {
   const { user, vendor, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [theme, setTheme] = React.useState<'light' | 'dark'>(() => (localStorage.getItem('theme') as 'light' | 'dark') || 'light');
+
+  React.useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const handleLogout = () => {
     logout();
@@ -52,6 +62,22 @@ export const DashboardLayout: React.FC = () => {
           </span>
         </div>
         <div className="flex items-center gap-4 text-xs font-semibold">
+          {/* Theme switcher */}
+          <button 
+            onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+            className="text-brand-linen hover:text-brand-terracotta transition-colors flex items-center p-1 cursor-pointer"
+            title="Toggle theme"
+          >
+            {theme === 'light' ? (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m2.828 9.9a5 5 0 117.072-7.072 5 5 0 01-7.072 7.072z" />
+              </svg>
+            )}
+          </button>
           <span className="text-brand-sand hidden sm:inline">Logged in: {user?.name}</span>
           <Button variant="ghost" size="sm" onClick={handleLogout} className="text-brand-linen hover:bg-brand-charcoal/50 text-[10px]">
             Sign Out

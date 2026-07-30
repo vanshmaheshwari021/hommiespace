@@ -12,6 +12,55 @@
   }
 }
 
+/* Global Dark Mode Overrides */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #1F1E1B !important;
+  color: #FAF8F5 !important;
+}
+
+html.dark .bg-brand-linen,
+html.dark .bg-brand-sand-light,
+html.dark .bg-brand-linen-light,
+html.dark .bg-white {
+  background-color: #1F1E1B !important;
+  color: #FAF8F5 !important;
+}
+
+html.dark .bg-brand-sand\/10,
+html.dark .bg-brand-sand\/15,
+html.dark .bg-brand-sand-light\/50,
+html.dark .bg-brand-sand-light\/35 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark .text-brand-walnut {
+  color: #FAF8F5 !important;
+}
+
+html.dark .text-brand-clay {
+  color: #C5BEB0 !important;
+}
+
+html.dark .border-brand-sand-dark\/20,
+html.dark .border-brand-sand-dark\/25,
+html.dark .border-brand-sand-dark\/35,
+html.dark .border-brand-sand-dark\/15,
+html.dark .border-brand-sand-dark\/10 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #2D2B26 !important;
+  color: #FAF8F5 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
 /* Custom global animations and scrollbars */
 ::-webkit-scrollbar {
   width: 8px;

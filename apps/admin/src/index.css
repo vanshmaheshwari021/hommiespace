@@ -4,12 +4,61 @@
 
 @layer base {
   body {
-    @apply bg-brand-linen text-brand-walnut font-sans antialiased min-h-screen selection:bg-brand-sand-dark selection:text-brand-walnut;
+    @apply bg-brand-linen text-brand-walnut dark:bg-brand-charcoal dark:text-brand-linen font-sans antialiased min-h-screen selection:bg-brand-sand-dark selection:text-brand-walnut transition-colors duration-300;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif text-brand-walnut tracking-wide;
+    @apply font-serif text-brand-walnut dark:text-brand-linen tracking-wide transition-colors duration-300;
   }
+}
+
+/* Global Dark Mode Overrides for Admin */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #1F1E1B !important;
+  color: #FAF8F5 !important;
+}
+
+html.dark .bg-brand-linen,
+html.dark .bg-brand-sand-light,
+html.dark .bg-brand-linen-light,
+html.dark .bg-white {
+  background-color: #262420 !important;
+  color: #FAF8F5 !important;
+}
+
+html.dark .bg-brand-sand\/10,
+html.dark .bg-brand-sand\/15,
+html.dark .bg-brand-sand-light\/50,
+html.dark .bg-brand-sand-light\/35 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark .text-brand-walnut {
+  color: #FAF8F5 !important;
+}
+
+html.dark .text-brand-clay {
+  color: #C5BEB0 !important;
+}
+
+html.dark .border-brand-sand-dark\/20,
+html.dark .border-brand-sand-dark\/25,
+html.dark .border-brand-sand-dark\/35,
+html.dark .border-brand-sand-dark\/15,
+html.dark .border-brand-sand-dark\/10 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #2D2B26 !important;
+  color: #FAF8F5 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Custom global scrollbars for admin */
