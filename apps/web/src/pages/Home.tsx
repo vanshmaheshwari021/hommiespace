@@ -34,44 +34,83 @@ export const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Banner Section */}
-      <section className="relative bg-brand-sand-light overflow-hidden border-b border-brand-sand-dark/20">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 min-h-[75vh]">
+      {/* Luxury Editorial Hero Section */}
+      <section className="relative bg-gradient-to-b from-brand-sand-light/60 via-brand-linen to-brand-sand-light/40 dark:from-brand-charcoal dark:via-brand-walnut/30 dark:to-brand-charcoal overflow-hidden border-b border-brand-sand-dark/20 py-12 lg:py-20">
+        {/* Soft Background Radial Light Effect */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-brand-terracotta/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-10 w-80 h-80 bg-brand-sand/30 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* Left Editorial Copy & CTA Column */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="lg:col-span-5 flex flex-col justify-center px-6 lg:px-12 py-16 text-left z-10"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-6 flex flex-col text-left z-10 space-y-6"
           >
-            <span className="text-[10px] uppercase tracking-widest font-semibold text-brand-terracotta mb-4">
-              {settings?.heroSubtitle || "Summer Collection 2026"}
-            </span>
-            <h2 className="text-4xl lg:text-6xl font-serif text-brand-walnut font-bold leading-[1.1] mb-6">
+            {/* Top Pill Tag */}
+            <div className="inline-flex items-center gap-3 bg-brand-linen dark:bg-brand-walnut/80 border border-brand-sand-dark/40 px-3.5 py-1.5 rounded-full w-max shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-brand-terracotta animate-pulse" />
+              <span className="text-[10px] uppercase tracking-widest font-bold text-brand-walnut dark:text-brand-linen font-sans">
+                {settings?.heroSubtitle || "EST. 2026 · COPENHAGEN & DELHI NCR"}
+              </span>
+            </div>
+
+            {/* Editorial Title */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-walnut dark:text-white font-black leading-[1.1] tracking-tight">
               {settings?.heroTitle || "Spaces that speak of quiet luxury."}
-            </h2>
-            <p className="text-brand-clay text-sm lg:text-base leading-relaxed mb-8 max-w-md font-sans">
-              {settings?.heroDescription || "Hand-finished solid wood furniture, organic clays, and textured linens curated from top independent design studios. Built to breathe and crafted to endure."}
+            </h1>
+
+            {/* Subtitle Description */}
+            <p className="text-brand-clay dark:text-brand-sand-dark text-sm sm:text-base leading-relaxed font-sans max-w-xl">
+              {settings?.heroDescription || "Hand-finished solid wood furniture, organic clay ceramics, and architectural lighting curated from independent Scandinavian and Indian design studios."}
             </p>
-            <div className="flex gap-4">
-              <Button variant="primary" className="py-4 px-8" onClick={() => {
-                const element = document.getElementById('curated-collection');
-                element?.scrollIntoView({ behavior: 'smooth' });
-              }}>
-                Explore Collection
+
+            {/* Feature Highlights Grid */}
+            <div className="grid grid-cols-3 gap-4 pt-2 pb-2 border-y border-brand-sand-dark/20 dark:border-brand-sand-dark/15 text-left font-sans">
+              <div>
+                <span className="block font-serif font-bold text-lg text-brand-walnut dark:text-white">100%</span>
+                <span className="text-[10px] uppercase tracking-wider text-brand-clay font-medium">Solid Hardwood</span>
+              </div>
+              <div>
+                <span className="block font-serif font-bold text-lg text-brand-terracotta">24+</span>
+                <span className="text-[10px] uppercase tracking-wider text-brand-clay font-medium">Artisan Studios</span>
+              </div>
+              <div>
+                <span className="block font-serif font-bold text-lg text-brand-walnut dark:text-white">30-Day</span>
+                <span className="text-[10px] uppercase tracking-wider text-brand-clay font-medium">In-Home Trial</span>
+              </div>
+            </div>
+
+            {/* Action CTAs */}
+            <div className="flex flex-wrap gap-4 pt-2">
+              <Button 
+                variant="primary" 
+                className="py-4 px-8 text-xs font-serif uppercase tracking-widest bg-brand-walnut text-brand-linen hover:bg-brand-terracotta transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                onClick={() => {
+                  const element = document.getElementById('curated-collection');
+                  element?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Explore Collection →
               </Button>
               <Link to="/products">
-                <Button variant="outline" className="py-4 px-8">
-                  View Catalog
+                <Button 
+                  variant="outline" 
+                  className="py-4 px-8 text-xs font-serif uppercase tracking-widest border border-brand-walnut dark:border-brand-sand text-brand-walnut dark:text-brand-linen hover:bg-brand-walnut hover:text-brand-linen transition-all shadow-sm hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                >
+                  View Full Catalog
                 </Button>
               </Link>
             </div>
           </motion.div>
 
+          {/* Right Column: Hero Interactive 3D Showcase Frame */}
           <motion.div 
-            initial={{ opacity: 0, scale: 1.02 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.2, ease: 'easeOut' }}
-            className="lg:col-span-7 relative min-h-[450px] lg:min-h-0 overflow-hidden"
+            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-6 relative rounded-2xl overflow-hidden shadow-2xl border border-brand-sand-dark/30 dark:border-brand-sand-dark/20 min-h-[460px]"
           >
             <Hero3DCanvas />
           </motion.div>
