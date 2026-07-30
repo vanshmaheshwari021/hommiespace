@@ -4,6 +4,7 @@ import { Button, Card, Skeleton } from '@hommiespace/ui';
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../api/index.js';
 import type { Product } from '@hommiespace/shared';
+import { Hero3DCanvas } from '../components/Hero3DCanvas.js';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -67,17 +68,12 @@ export const Home: React.FC = () => {
           </motion.div>
 
           <motion.div 
-            initial={{ opacity: 0, scale: 1.05 }}
+            initial={{ opacity: 0, scale: 1.02 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, ease: 'easeOut' }}
-            className="lg:col-span-7 relative min-h-[40vh] lg:min-h-0 bg-brand-sand-dark/20"
+            className="lg:col-span-7 relative min-h-[450px] lg:min-h-0 overflow-hidden"
           >
-            <img 
-              src={settings?.heroImageUrl || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=1600"}
-              alt="Premium Living Room"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-sand-light via-transparent to-transparent lg:block hidden" />
+            <Hero3DCanvas />
           </motion.div>
         </div>
       </section>

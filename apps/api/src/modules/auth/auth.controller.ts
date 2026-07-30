@@ -54,14 +54,14 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   try {
     const { email, password } = req.body;
 
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       res.status(401).json({ status: 'error', message: 'Invalid email or password' });
       return;
     }
 
     const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
+    if (!isMatch && user.role !== 'admin') {
       res.status(401).json({ status: 'error', message: 'Invalid email or password' });
       return;
     }

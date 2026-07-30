@@ -96,6 +96,15 @@ export const createProduct = async (req: AuthRequest, res: Response, next: NextF
         return;
       }
       vendorId = vendorProfile._id;
+    } else if (!vendorId && req.user.role === 'admin') {
+      const { default: VendorModel } = await import('../../models/Vendor.js');
+      const firstVendor = await VendorModel.findOne({});
+      if (firstVendor) {
+        vendorId = firstVendor._id;
+      } else {
+        res.status(400).json({ status: 'error', message: 'No studio partner vendor profile exists in system.' });
+        return;
+      }
     }
 
     const product = new ProductModel({
