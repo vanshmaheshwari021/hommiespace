@@ -5,27 +5,31 @@ import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
 
 export const Login: React.FC = () => {
+  const [email, setEmail] = useState('admin@hommiespace.com');
+  const [password, setPassword] = useState('password123');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const doLogin = async () => {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword) {
+      setError('Please enter both email and password.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
+
     try {
-      const formData = new FormData(e.currentTarget);
-      const email = String(formData.get('email') || '').trim();
-      const password = String(formData.get('password') || '').trim();
+      const response = await API.post('/auth/login', {
+        email: cleanEmail,
+        password: cleanPassword
+      });
 
-      if (!email || !password) {
-        setError('Please enter both email and password.');
-        setLoading(false);
-        return;
-      }
-
-      const response = await API.post('/auth/login', { email, password });
       const { user, token } = response.data.data;
 
       let vendor = null;
@@ -47,7 +51,7 @@ export const Login: React.FC = () => {
       } else if (user.role === 'vendor') {
         window.location.href = '/vendor/dashboard';
       } else {
-        setError('Forbidden: This portal is only for administrators or vendor partners.');
+        setError('Forbidden: Customer accounts cannot access the Partner Portal.');
       }
     } catch (err: any) {
       console.error('Login Error:', err);
@@ -57,6 +61,11 @@ export const Login: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    doLogin();
   };
 
   return (
@@ -91,10 +100,11 @@ export const Login: React.FC = () => {
               <input
                 type="email"
                 name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
                 placeholder="admin@hommiespace.com"
-                defaultValue="admin@hommiespace.com"
               />
             </div>
 
@@ -106,10 +116,11 @@ export const Login: React.FC = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                   className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 pr-10 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
                   placeholder="••••••••"
-                  defaultValue="password123"
                 />
                 <button
                   type="button"
@@ -139,6 +150,7 @@ export const Login: React.FC = () => {
 
             <button
               type="submit"
+              onClick={handleSubmit}
               disabled={loading}
               className="w-full py-4 text-center mt-2 bg-brand-walnut text-brand-linen font-serif uppercase tracking-widest font-bold text-xs hover:bg-brand-charcoal transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-95 border-none"
             >

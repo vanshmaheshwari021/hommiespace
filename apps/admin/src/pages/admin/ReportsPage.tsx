@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Skeleton, Table } from '@hommiespace/ui';
+import { Card, Skeleton, Table } from '@hommiespace/ui';
 import API from '../../api/index.js';
 
 interface AnalyticsData {
@@ -42,16 +42,26 @@ export const ReportsPage: React.FC = () => {
 
   const handleDownloadCSV = async (type: string) => {
     try {
-      const response = await API.get(`/reports/csv?type=${type}`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      console.log('Initiating CSV download for type:', type);
+      const response = await API.get(`/reports/csv?type=${type}`, {
+        responseType: 'blob'
+      });
+      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `${type}_report.csv`);
       document.body.appendChild(link);
       link.click();
-      link.remove();
-    } catch (err) {
-      alert('Failed to download CSV report.');
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (err: any) {
+      console.error('CSV Download Failure:', err);
+      alert('Failed to download CSV report. Please ensure your session is active.');
     }
   };
 
@@ -95,10 +105,34 @@ export const ReportsPage: React.FC = () => {
         <p className="text-xs text-brand-clay font-sans mb-6">Generate and save spreadsheet records directly to your machine.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Button variant="outline" className="py-3 text-xs" onClick={() => handleDownloadCSV('sales')}>Export Sales (CSV)</Button>
-          <Button variant="outline" className="py-3 text-xs" onClick={() => handleDownloadCSV('product')}>Export Catalog (CSV)</Button>
-          <Button variant="outline" className="py-3 text-xs" onClick={() => handleDownloadCSV('vendor')}>Export Studios (CSV)</Button>
-          <Button variant="outline" className="py-3 text-xs" onClick={() => handleDownloadCSV('customer')}>Export Customers (CSV)</Button>
+          <button 
+            type="button" 
+            onClick={() => handleDownloadCSV('sales')}
+            className="py-3 px-4 text-xs font-serif uppercase tracking-wider font-bold border border-brand-walnut text-brand-walnut hover:bg-brand-walnut hover:text-brand-linen transition-all cursor-pointer shadow-xs active:scale-95 text-center"
+          >
+            Export Sales (CSV)
+          </button>
+          <button 
+            type="button" 
+            onClick={() => handleDownloadCSV('product')}
+            className="py-3 px-4 text-xs font-serif uppercase tracking-wider font-bold border border-brand-walnut text-brand-walnut hover:bg-brand-walnut hover:text-brand-linen transition-all cursor-pointer shadow-xs active:scale-95 text-center"
+          >
+            Export Catalog (CSV)
+          </button>
+          <button 
+            type="button" 
+            onClick={() => handleDownloadCSV('vendor')}
+            className="py-3 px-4 text-xs font-serif uppercase tracking-wider font-bold border border-brand-walnut text-brand-walnut hover:bg-brand-walnut hover:text-brand-linen transition-all cursor-pointer shadow-xs active:scale-95 text-center"
+          >
+            Export Studios (CSV)
+          </button>
+          <button 
+            type="button" 
+            onClick={() => handleDownloadCSV('customer')}
+            className="py-3 px-4 text-xs font-serif uppercase tracking-wider font-bold border border-brand-walnut text-brand-walnut hover:bg-brand-walnut hover:text-brand-linen transition-all cursor-pointer shadow-xs active:scale-95 text-center"
+          >
+            Export Customers (CSV)
+          </button>
         </div>
       </Card>
 
