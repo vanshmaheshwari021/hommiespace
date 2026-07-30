@@ -1,7 +1,34 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Html, Float } from '@react-three/drei';
+import { OrbitControls, Html } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
+
+interface ErrorBoundaryProps {
+  fallback: React.ReactNode;
+  children: React.ReactNode;
+}
+
+class ErrorBoundary3D extends React.Component<ErrorBoundaryProps, { hasError: boolean }> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any) {
+    console.warn('R3F 3D Canvas fallback triggered:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
 
 interface HotspotProps {
   position: [number, number, number];
@@ -63,90 +90,87 @@ const RoomScene: React.FC<{ onSelectProduct: (path: string) => void }> = ({ onSe
 
       {/* Bouclé Lounge Sofa */}
       <group position={[-0.8, 0.4, -0.2]}>
-        {/* Main Seat Cushion */}
         <mesh position={[0, 0.15, 0]} castShadow>
           <boxGeometry args={[1.8, 0.35, 1.1]} />
           <meshStandardMaterial color="#F4F0E8" roughness={0.8} />
         </mesh>
-        {/* Backrest */}
-        <mesh position={[0, 0.55, -0.42]} castShadow>
-          <boxGeometry args={[1.8, 0.5, 0.28]} />
-          <meshStandardMaterial color="#F0EBE0" roughness={0.85} />
+        <mesh position={[0, 0.5, -0.45]} castShadow>
+          <boxGeometry args={[1.8, 0.45, 0.25]} />
+          <meshStandardMaterial color="#EAE4D8" roughness={0.8} />
         </mesh>
-        {/* Wooden Legs */}
-        {[-0.8, 0.8].map((x, i) => (
-          <mesh key={i} position={[x, -0.1, 0.3]} castShadow>
-            <cylinderGeometry args={[0.04, 0.03, 0.25, 16]} />
-            <meshStandardMaterial color="#3D2E26" roughness={0.4} />
-          </mesh>
-        ))}
+        <mesh position={[-0.8, 0.35, 0]} castShadow>
+          <boxGeometry args={[0.25, 0.35, 1.1]} />
+          <meshStandardMaterial color="#EAE4D8" roughness={0.8} />
+        </mesh>
+        <mesh position={[0.8, 0.35, 0]} castShadow>
+          <boxGeometry args={[0.25, 0.35, 1.1]} />
+          <meshStandardMaterial color="#EAE4D8" roughness={0.8} />
+        </mesh>
       </group>
 
-      {/* Travertine Low Coffee Table */}
-      <group position={[0.7, 0.25, 0.4]}>
-        {/* Table Slab Top */}
-        <mesh position={[0, 0.12, 0]} castShadow>
-          <cylinderGeometry args={[0.65, 0.65, 0.06, 32]} />
-          <meshStandardMaterial color="#DDD5C7" roughness={0.3} metalness={0.1} />
+      {/* Travertine Coffee Table */}
+      <group position={[0.5, 0.25, 0.3]}>
+        <mesh position={[0, 0.15, 0]} castShadow>
+          <boxGeometry args={[1.2, 0.08, 0.7]} />
+          <meshStandardMaterial color="#D9CEB8" roughness={0.4} metalness={0.1} />
         </mesh>
-        {/* Table Pedestal Leg */}
-        <mesh position={[0, -0.05, 0]} castShadow>
-          <cylinderGeometry args={[0.3, 0.35, 0.28, 32]} />
-          <meshStandardMaterial color="#CBBFA9" roughness={0.5} />
+        <mesh position={[-0.45, 0.07, -0.2]} castShadow>
+          <cylinderGeometry args={[0.06, 0.06, 0.14, 16]} />
+          <meshStandardMaterial color="#A39682" />
         </mesh>
-        {/* Ceramic Vase on Table */}
-        <mesh position={[0.15, 0.28, -0.1]} castShadow>
+        <mesh position={[0.45, 0.07, 0.2]} castShadow>
+          <cylinderGeometry args={[0.06, 0.06, 0.14, 16]} />
+          <meshStandardMaterial color="#A39682" />
+        </mesh>
+
+        {/* Ceramic Vase Accent */}
+        <mesh position={[0.2, 0.3, 0]} castShadow>
           <cylinderGeometry args={[0.08, 0.12, 0.25, 16]} />
           <meshStandardMaterial color="#BC6C58" roughness={0.6} />
         </mesh>
       </group>
 
-      {/* Sculptural Brass Floor Lamp */}
-      <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.2}>
-        <group position={[1.4, 1.1, -0.8]}>
-          {/* Base */}
-          <mesh position={[0, -0.8, 0]} castShadow>
-            <cylinderGeometry args={[0.2, 0.2, 0.04, 24]} />
-            <meshStandardMaterial color="#B89768" metalness={0.8} roughness={0.2} />
-          </mesh>
-          {/* Pole Stem */}
-          <mesh position={[0, 0, 0]} castShadow>
-            <cylinderGeometry args={[0.02, 0.02, 1.6, 16]} />
-            <meshStandardMaterial color="#B89768" metalness={0.8} roughness={0.2} />
-          </mesh>
-          {/* Lamp Shade */}
-          <mesh position={[0, 0.8, 0]} castShadow>
-            <coneGeometry args={[0.35, 0.3, 24]} />
-            <meshStandardMaterial color="#FAF8F5" roughness={0.3} />
-          </mesh>
-        </group>
-      </Float>
+      {/* Architectural Brass Floor Lamp */}
+      <group position={[1.4, 0, -0.8]}>
+        <mesh position={[0, 0.02, 0]}>
+          <cylinderGeometry args={[0.25, 0.25, 0.04, 32]} />
+          <meshStandardMaterial color="#3D2E26" metalness={0.6} />
+        </mesh>
+        <mesh position={[0, 1.1, 0]}>
+          <cylinderGeometry args={[0.02, 0.02, 2.2, 16]} />
+          <meshStandardMaterial color="#C5A059" metalness={0.8} roughness={0.2} />
+        </mesh>
+        <mesh position={[0, 2.1, 0]}>
+          <coneGeometry args={[0.3, 0.35, 32]} />
+          <meshStandardMaterial color="#F9F6F0" roughness={0.3} />
+        </mesh>
+      </group>
 
-      {/* 3D Interactive Hotspot Markers */}
+      {/* 3D Hotspot Pulse Markers */}
       <HotspotMarker 
-        position={[-0.8, 0.8, -0.2]} 
-        title="Oasis Bouclé Lounge Chair" 
-        price="₹890.00" 
-        category="Furniture" 
-        image="https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&q=80&w=300"
-        onClick={() => onSelectProduct('/products')}
-      />
-
-      <HotspotMarker 
-        position={[0.7, 0.5, 0.4]} 
-        title="Travertine Low Coffee Table" 
-        price="₹750.00" 
-        category="Living Room" 
-        image="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=300"
+        position={[-0.8, 0.75, 0]}
+        title="Minimalist Oak Lounge Chair"
+        price="₹24,500"
+        category="Furniture"
+        image="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=400&q=80"
         onClick={() => onSelectProduct('/products?category=furniture')}
       />
 
       <HotspotMarker 
-        position={[1.4, 1.6, -0.8]} 
-        title="Brushed Brass Floor Lamp" 
-        price="₹420.00" 
-        category="Lighting" 
-        image="https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=300"
+        position={[0.5, 0.45, 0.3]}
+        title="Nordic Ceramic Vase Set"
+        price="₹4,200"
+        category="Kitchenware"
+        image="https://images.unsplash.com/photo-1612196808214-b7e239e5f6b7?auto=format&fit=crop&w=400&q=80"
+        onClick={() => onSelectProduct('/products?category=kitchenware')}
+      />
+
+      <HotspotMarker 
+        position={[1.4, 2.2, -0.8]}
+        title="Sculptural Ceramic Pendant Lamp"
+        price="₹12,800"
+        category="Lighting"
+        image="https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=400&q=80"
         onClick={() => onSelectProduct('/products?category=lighting')}
       />
     </group>
@@ -161,49 +185,57 @@ export const Hero3DCanvas: React.FC = () => {
     try {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl) setHasWebGL(false);
+      if (!gl) {
+        setHasWebGL(false);
+      }
     } catch (e) {
       setHasWebGL(false);
     }
   }, []);
 
-  // WebGL Static Image Fallback for Mobile / Low-End Devices
-  if (!hasWebGL) {
-    return (
-      <div className="relative w-full h-full min-h-[420px] bg-brand-sand-dark/20 flex items-center justify-center">
-        <img 
-          src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=1200" 
-          alt="HommieSpace Luxury Room Scene" 
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/20" />
+  const editorialFallback = (
+    <div className="relative w-full h-full min-h-[420px] bg-brand-sand-light dark:bg-brand-charcoal overflow-hidden group">
+      <img 
+        src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=80" 
+        alt="Luxury Scandinavian Interior" 
+        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal/80 via-transparent to-transparent flex flex-col justify-end p-8 text-left">
+        <span className="text-brand-linen text-[10px] uppercase font-mono tracking-widest bg-brand-terracotta px-3 py-1 w-max mb-2">Curated Showroom</span>
+        <h3 className="font-serif text-2xl font-bold text-white">Quiet Luxury Living Spaces</h3>
       </div>
-    );
+    </div>
+  );
+
+  if (!hasWebGL) {
+    return editorialFallback;
   }
 
   return (
     <div className="relative w-full h-full min-h-[420px] bg-gradient-to-b from-brand-sand-light/40 via-brand-linen to-brand-sand-light/20 dark:from-brand-charcoal dark:to-brand-walnut/40">
-      <Suspense fallback={
-        <div className="w-full h-full flex items-center justify-center text-xs font-sans text-brand-clay animate-pulse">
-          Loading Interactive 3D Room Scene...
-        </div>
-      }>
-        <Canvas 
-          camera={{ position: [3, 2.5, 4.5], fov: 42 }}
-          shadows
-          className="w-full h-full cursor-grab active:cursor-grabbing"
-        >
-          <RoomScene onSelectProduct={(path) => navigate(path)} />
-          <OrbitControls 
-            enableZoom={false} 
-            autoRotate 
-            autoRotateSpeed={0.8} 
-            maxPolarAngle={Math.PI / 2 - 0.05} 
-            minPolarAngle={Math.PI / 4}
-            dampingFactor={0.05}
-          />
-        </Canvas>
-      </Suspense>
+      <ErrorBoundary3D fallback={editorialFallback}>
+        <Suspense fallback={
+          <div className="w-full h-full flex items-center justify-center text-xs font-sans text-brand-clay animate-pulse">
+            Loading Interactive 3D Room Scene...
+          </div>
+        }>
+          <Canvas 
+            camera={{ position: [3, 2.5, 4.5], fov: 42 }}
+            shadows
+            className="w-full h-full cursor-grab active:cursor-grabbing"
+          >
+            <RoomScene onSelectProduct={(path) => navigate(path)} />
+            <OrbitControls 
+              enableZoom={false} 
+              autoRotate 
+              autoRotateSpeed={0.8} 
+              maxPolarAngle={Math.PI / 2 - 0.05} 
+              minPolarAngle={Math.PI / 4}
+              dampingFactor={0.05}
+            />
+          </Canvas>
+        </Suspense>
+      </ErrorBoundary3D>
 
       {/* Floating 3D Interaction Badge */}
       <div className="absolute bottom-4 right-4 bg-brand-linen/90 dark:bg-brand-charcoal/90 border border-brand-sand-dark/30 px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest text-brand-walnut dark:text-brand-linen shadow-lg pointer-events-none flex items-center gap-2">
