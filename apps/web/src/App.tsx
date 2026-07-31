@@ -6,7 +6,6 @@ import ProductListing from './pages/ProductListing.js';
 import ProductDetail from './pages/ProductDetail.js';
 import VendorShowroom from './pages/VendorShowroom.js';
 import Checkout from './pages/Checkout.js';
-import OrdersList from './pages/OrdersList.js';
 import SupportTickets from './pages/SupportTickets.js';
 import Login from './pages/Login.js';
 import Register from './pages/Register.js';
