@@ -2,27 +2,63 @@ import React, { useEffect, useState } from 'react';
 import { Card, Table, Button, Skeleton } from '@hommiespace/ui';
 import API from '../../api/index.js';
 
+interface OrderItem {
+  product?: {
+    name?: string;
+    images?: string[];
+    price?: number;
+  };
+  variantName?: string;
+  qty?: number;
+  price?: number;
+}
+
 interface Order {
-  id: string;
+  id?: string;
+  _id?: string;
   customerName?: string;
-  totalPrice: number;
-  paymentMethod: string;
-  paymentStatus: string;
-  orderStatus: string;
-  createdAt: string;
+  totalPrice?: number;
+  totalAmount?: number;
+  total?: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  orderStatus?: string;
+  status?: string;
+  createdAt?: string;
+  items?: OrderItem[];
 }
 
 const mockOrdersList: Order[] = [
-  { id: 'ORD-89401', customerName: 'Rohan Mehta', totalPrice: 48500, paymentMethod: 'UPI / Razorpay', paymentStatus: 'paid', orderStatus: 'delivered', createdAt: '2026-07-30T10:15:00Z' },
-  { id: 'ORD-89402', customerName: 'Priya Sundaram', totalPrice: 124000, paymentMethod: 'Credit Card', paymentStatus: 'paid', orderStatus: 'shipped', createdAt: '2026-07-30T11:45:00Z' },
-  { id: 'ORD-89403', customerName: 'Kabir Verma', totalPrice: 32000, paymentMethod: 'Net Banking', paymentStatus: 'pending', orderStatus: 'processing', createdAt: '2026-07-30T14:20:00Z' },
-  { id: 'ORD-89404', customerName: 'Anushka Sen', totalPrice: 16850, paymentMethod: 'UPI', paymentStatus: 'paid', orderStatus: 'delivered', createdAt: '2026-07-30T16:05:00Z' },
-  { id: 'ORD-89405', customerName: 'Siddharth Kapoor', totalPrice: 95000, paymentMethod: 'EMI Card', paymentStatus: 'paid', orderStatus: 'shipped', createdAt: '2026-07-30T18:30:00Z' },
-  { id: 'ORD-89406', customerName: 'Divya Nambiar', totalPrice: 27900, paymentMethod: 'Credit Card', paymentStatus: 'paid', orderStatus: 'processing', createdAt: '2026-07-31T08:10:00Z' },
-  { id: 'ORD-89407', customerName: 'Arjun Singhania', totalPrice: 215000, paymentMethod: 'Wire Transfer', paymentStatus: 'paid', orderStatus: 'shipped', createdAt: '2026-07-31T09:15:00Z' },
-  { id: 'ORD-89408', customerName: 'Tanya Banerjee', totalPrice: 14200, paymentMethod: 'UPI', paymentStatus: 'pending', orderStatus: 'pending', createdAt: '2026-07-31T10:30:00Z' },
-  { id: 'ORD-89409', customerName: 'Aditya Deshmukh', totalPrice: 63400, paymentMethod: 'Credit Card', paymentStatus: 'paid', orderStatus: 'processing', createdAt: '2026-07-31T11:50:00Z' },
-  { id: 'ORD-89410', customerName: 'Neha Bhattacharya', totalPrice: 89000, paymentMethod: 'Net Banking', paymentStatus: 'paid', orderStatus: 'shipped', createdAt: '2026-07-31T12:40:00Z' }
+  { 
+    id: 'ORD-89401', 
+    customerName: 'Rohan Mehta (rohan@example.com)', 
+    totalPrice: 48500, 
+    paymentMethod: 'UPI / Razorpay', 
+    paymentStatus: 'paid', 
+    orderStatus: 'delivered', 
+    createdAt: '2026-07-30T10:15:00Z',
+    items: [{ product: { name: 'Stockholm Velvet Armchair' }, qty: 1, price: 29500 }, { product: { name: 'Kobenhavn Ceramic Vase' }, qty: 2, price: 9500 }]
+  },
+  { 
+    id: 'ORD-89402', 
+    customerName: 'Priya Sundaram (priya@example.com)', 
+    totalPrice: 124000, 
+    paymentMethod: 'Credit Card', 
+    paymentStatus: 'paid', 
+    orderStatus: 'shipped', 
+    createdAt: '2026-07-30T11:45:00Z',
+    items: [{ product: { name: 'Nordic Oak Dining Table' }, qty: 1, price: 124000 }]
+  },
+  { 
+    id: 'ORD-89403', 
+    customerName: 'Kabir Verma (kabir@example.com)', 
+    totalPrice: 32000, 
+    paymentMethod: 'Net Banking', 
+    paymentStatus: 'pending', 
+    orderStatus: 'processing', 
+    createdAt: '2026-07-30T14:20:00Z',
+    items: [{ product: { name: 'Gothenburg Brass Floor Lamp' }, qty: 1, price: 32000 }]
+  }
 ];
 
 export const OrdersManager: React.FC = () => {
@@ -31,16 +67,28 @@ export const OrdersManager: React.FC = () => {
 
   const fetchOrders = async () => {
     setLoading(true);
+    let liveOrders: Order[] = [];
+
     try {
       const response = await API.get('/orders');
-      if (response.data?.data && Array.isArray(response.data.data) && response.data.data.length > 0) {
-        setOrders(response.data.data);
+      if (response.data?.data && Array.isArray(response.data.data)) {
+        liveOrders = response.data.data;
       }
     } catch (err) {
       console.warn('API fetch fallback to mock orders:', err);
-    } finally {
-      setLoading(false);
     }
+
+    // Merge with locally stored checkout orders placed in web app
+    try {
+      const stored = JSON.parse(localStorage.getItem('hs_placed_orders') || '[]');
+      if (Array.isArray(stored) && stored.length > 0) {
+        liveOrders = [...stored, ...liveOrders];
+      }
+    } catch (e) {}
+
+    const combined = liveOrders.length > 0 ? [...liveOrders, ...mockOrdersList] : mockOrdersList;
+    setOrders(combined);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -55,8 +103,8 @@ export const OrdersManager: React.FC = () => {
     }
     setOrders(prev =>
       prev.map(o => {
-        const oId = o.id || (o as any)._id;
-        return String(oId) === String(orderId) ? { ...o, orderStatus: status } : o;
+        const oId = o.id || o._id;
+        return String(oId) === String(orderId) ? { ...o, orderStatus: status, status } : o;
       })
     );
   };
@@ -69,7 +117,7 @@ export const OrdersManager: React.FC = () => {
     }
     setOrders(prev =>
       prev.map(o => {
-        const oId = o.id || (o as any)._id;
+        const oId = o.id || o._id;
         return String(oId) === String(orderId) ? { ...o, paymentStatus: payment } : o;
       })
     );
@@ -88,26 +136,51 @@ export const OrdersManager: React.FC = () => {
     <div className="space-y-8">
       <div>
         <h1 className="font-serif text-2xl lg:text-3xl font-bold text-brand-walnut mb-2">Customer Orders Manager</h1>
-        <p className="text-brand-clay text-sm font-sans">Moderate order shipping lifecycles and payments across the marketplace.</p>
+        <p className="text-brand-clay text-sm font-sans">Moderate customer orders, purchased products, shipping lifecycles, and payments.</p>
       </div>
 
       <Card className="p-6 bg-white border border-brand-sand-dark/20" hoverEffect={false}>
         {orders.length === 0 ? (
           <div className="p-8 text-center text-brand-clay text-xs font-sans">No orders recorded on the platform yet.</div>
         ) : (
-          <Table headers={['Order ID', 'Customer Name', 'Payment Method & Status', 'Shipment Status', 'Grand Total', 'Action Steps']}>
-            {orders.map(order => {
-              const oId = order.id || (order as any)._id;
+          <Table headers={['Order ID', 'Customer Name', 'Purchased Products', 'Payment Method & Status', 'Shipment Status', 'Grand Total', 'Action Steps']}>
+            {orders.map((order, idx) => {
+              const oId = order.id || order._id || `ORD-LIVE-00${idx + 1}`;
+              const displayId = String(oId).slice(-8).toUpperCase();
+              const custName = order.customerName || 'Customer Account';
+              const currentOrderStatus = order.orderStatus || order.status || 'pending';
+              const currentPaymentStatus = order.paymentStatus || 'paid';
+              const totalVal = order.totalPrice || order.totalAmount || order.total || 0;
+
               return (
-                <tr key={String(oId)} className="hover:bg-brand-sand-light/35 text-xs text-brand-walnut border-b border-brand-sand-dark/10">
-                  <td className="p-4 font-mono font-bold text-brand-terracotta">{String(oId).toUpperCase()}</td>
-                  <td className="p-4 font-bold">{order.customerName || 'Customer Account'}</td>
+                <tr key={`${String(oId)}-${idx}`} className="hover:bg-brand-sand-light/35 text-xs text-brand-walnut border-b border-brand-sand-dark/10">
+                  <td className="p-4 font-mono font-bold text-brand-terracotta">#{displayId}</td>
+                  <td className="p-4 font-bold">{custName}</td>
                   <td className="p-4 space-y-1">
-                    <p className="text-[10px] text-brand-clay uppercase font-semibold">{order.paymentMethod}</p>
+                    {order.items && order.items.length > 0 ? (
+                      order.items.map((item, itemIdx) => (
+                        <div key={itemIdx} className="text-[11px] font-sans">
+                          <span className="font-semibold text-brand-walnut">
+                            {item.product?.name || 'Curated Design Piece'}
+                          </span>
+                          {item.variantName && (
+                            <span className="text-[10px] text-brand-clay font-mono bg-brand-sand-light px-1.5 py-0.5 ml-1 border border-brand-sand-dark/20">
+                              {item.variantName}
+                            </span>
+                          )}
+                          <span className="text-brand-clay font-mono ml-1">× {item.qty || 1}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-[11px] text-brand-clay italic">Curated Scandinavian Furniture</span>
+                    )}
+                  </td>
+                  <td className="p-4 space-y-1">
+                    <p className="text-[10px] text-brand-clay uppercase font-semibold">{order.paymentMethod || 'Credit Card'}</p>
                     <select
-                      value={order.paymentStatus}
+                      value={currentPaymentStatus}
                       onChange={(e) => handleUpdatePayment(String(oId), e.target.value)}
-                      className="bg-brand-linen-light border border-brand-sand-dark/30 px-2 py-1 text-[11px] font-sans rounded-none"
+                      className="bg-brand-linen-light border border-brand-sand-dark/30 px-2 py-1 text-[11px] font-sans rounded-none cursor-pointer"
                     >
                       <option value="pending">Pending</option>
                       <option value="paid">Paid</option>
@@ -117,9 +190,9 @@ export const OrdersManager: React.FC = () => {
                   </td>
                   <td className="p-4">
                     <select
-                      value={order.orderStatus}
+                      value={currentOrderStatus}
                       onChange={(e) => handleUpdateStatus(String(oId), e.target.value)}
-                      className="bg-brand-linen-light border border-brand-sand-dark/30 px-2 py-1 text-[11px] font-sans rounded-none"
+                      className="bg-brand-linen-light border border-brand-sand-dark/30 px-2 py-1 text-[11px] font-sans rounded-none cursor-pointer"
                     >
                       <option value="pending">Pending</option>
                       <option value="processing">Processing</option>
@@ -128,7 +201,7 @@ export const OrdersManager: React.FC = () => {
                       <option value="cancelled">Cancelled</option>
                     </select>
                   </td>
-                  <td className="p-4 font-bold font-serif text-sm">₹{order.totalPrice.toLocaleString()}</td>
+                  <td className="p-4 font-bold font-serif text-sm">₹{totalVal.toLocaleString()}</td>
                   <td className="p-4">
                     <Button variant="ghost" size="sm" onClick={() => window.print()} className="p-1 hover:underline text-brand-sage font-semibold text-[10px] uppercase tracking-wider">
                       Print Invoice
