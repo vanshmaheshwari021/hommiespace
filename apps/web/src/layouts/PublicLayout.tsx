@@ -148,13 +148,13 @@ export const PublicLayout: React.FC = () => {
             {user ? (
               <div className="flex items-center gap-3">
                 <Link 
-                  to="/orders" 
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-sand-light dark:bg-brand-walnut/90 border border-brand-sand-dark/40 rounded-full text-xs font-serif font-bold text-brand-walnut dark:text-brand-linen hover:text-brand-terracotta transition-all shadow-sm"
+                  to="/profile" 
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-brand-sand-light dark:bg-brand-walnut/90 border border-brand-sand-dark/40 rounded-full text-xs font-serif font-bold text-brand-walnut dark:text-brand-linen hover:text-brand-terracotta transition-all shadow-sm"
                 >
                   <svg className="w-4 h-4 text-brand-terracotta" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  <span>Orders ({user.name.split(' ')[0]})</span>
+                  <span>Profile ({user.name.split(' ')[0]})</span>
                 </Link>
                 <Button variant="ghost" size="sm" onClick={() => logout()} className="text-[10px] uppercase font-mono tracking-wider">
                   Log Out
@@ -204,7 +204,7 @@ export const PublicLayout: React.FC = () => {
               <h4 className="font-serif text-sm font-bold text-brand-linen mb-4 uppercase tracking-widest">Studio Network</h4>
               <ul className="space-y-2 text-xs text-brand-sand-dark">
                 <li><Link to="/vendor/onboarding" className="hover:text-brand-linen transition-colors">Become a Studio Partner</Link></li>
-                <li><a href="http://localhost:5174" target="_blank" rel="noreferrer" className="hover:text-brand-linen transition-colors">Partner Dashboard</a></li>
+                <li><a href="http://localhost:5180" target="_blank" rel="noreferrer" className="hover:text-brand-linen transition-colors">Partner Dashboard</a></li>
                 <li><Link to="/support" className="hover:text-brand-linen transition-colors">Design Support Desk</Link></li>
               </ul>
             </div>

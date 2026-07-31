@@ -27,6 +27,12 @@ export const Register: React.FC = () => {
         return;
       }
 
+      // Smart Admin Detection: If registering/authenticating as Super Admin email
+      if (email.toLowerCase() === 'admin@hommiespace.com') {
+        window.location.href = '/admin/dashboard';
+        return;
+      }
+
       const response = await API.post('/auth/register', { name, email, password, role });
       const { user, token } = response.data.data;
 
@@ -41,7 +47,12 @@ export const Register: React.FC = () => {
       }
 
       setAuth(user, token, vendor);
-      window.location.href = '/vendor/dashboard';
+      
+      if (user.role === 'admin') {
+        window.location.href = '/admin/dashboard';
+      } else {
+        window.location.href = '/vendor/dashboard';
+      }
     } catch (err: any) {
       console.error('Registration Error:', err);
       setError(

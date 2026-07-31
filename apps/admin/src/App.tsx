@@ -1,24 +1,25 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import RequireRole from './guards/RequireRole';
-import AdminLayout from './layouts/AdminLayout';
-import VendorLayout from './layouts/VendorLayout';
-import VendorDashboard from './pages/vendor/VendorDashboard';
-import ProductManagement from './pages/vendor/ProductManagement';
-import Onboarding from './pages/vendor/Onboarding';
-import VendorOrdersList from './pages/vendor/OrdersList';
-import VendorEnquiriesList from './pages/vendor/EnquiriesList';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import VendorApprovals from './pages/admin/VendorApprovals';
-import CMSManager from './pages/admin/CMSManager';
-import SettingsPage from './pages/admin/SettingsPage';
-import CouponsPage from './pages/admin/CouponsPage';
-import OrdersManager from './pages/admin/OrdersManager';
-import ReportsPage from './pages/admin/ReportsPage';
-import CatalogModeration from './pages/admin/CatalogModeration';
-import Unauthorized from './pages/Unauthorized';
+import Login from './pages/Login.js';
+import Register from './pages/Register.js';
+import AdminLogin from './pages/AdminLogin.js';
+import RequireRole from './guards/RequireRole.js';
+import AdminLayout from './layouts/AdminLayout.js';
+import VendorLayout from './layouts/VendorLayout.js';
+import VendorDashboard from './pages/vendor/VendorDashboard.js';
+import ProductManagement from './pages/vendor/ProductManagement.js';
+import Onboarding from './pages/vendor/Onboarding.js';
+import VendorOrdersList from './pages/vendor/OrdersList.js';
+import VendorEnquiriesList from './pages/vendor/EnquiriesList.js';
+import AdminDashboard from './pages/admin/AdminDashboard.js';
+import VendorApprovals from './pages/admin/VendorApprovals.js';
+import CMSManager from './pages/admin/CMSManager.js';
+import SettingsPage from './pages/admin/SettingsPage.js';
+import CouponsPage from './pages/admin/CouponsPage.js';
+import OrdersManager from './pages/admin/OrdersManager.js';
+import ReportsPage from './pages/admin/ReportsPage.js';
+import CatalogModeration from './pages/admin/CatalogModeration.js';
+import Unauthorized from './pages/Unauthorized.js';
 
 const queryClient = new QueryClient();
 
@@ -27,9 +28,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* Public Routes */}
+          {/* Public Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Protected Vendor Routes */}

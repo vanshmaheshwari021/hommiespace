@@ -6,10 +6,10 @@ import ProductListing from './pages/ProductListing.js';
 import ProductDetail from './pages/ProductDetail.js';
 import VendorShowroom from './pages/VendorShowroom.js';
 import Checkout from './pages/Checkout.js';
-import OrdersList from './pages/OrdersList.js';
 import SupportTickets from './pages/SupportTickets.js';
 import Login from './pages/Login.js';
 import Register from './pages/Register.js';
+import ProfilePage from './pages/ProfilePage.js';
 
 const queryClient = new QueryClient();
 
@@ -18,19 +18,22 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+          {/* Main Layout Pages */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<ProductListing />} />
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/vendors/:id" element={<VendorShowroom />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/orders" element={<OrdersList />} />
-            <Route path="/profile" element={<OrdersList />} />
-            <Route path="/profile/orders" element={<OrdersList />} />
+            <Route path="/orders" element={<ProfilePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/orders" element={<ProfilePage />} />
             <Route path="/profile/tickets" element={<SupportTickets />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
           </Route>
+
+          {/* Dedicated Standalone Authentication Pages */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* Fallbacks */}
           <Route path="*" element={<Navigate to="/" replace />} />
