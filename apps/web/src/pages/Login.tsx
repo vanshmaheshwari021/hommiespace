@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
 
 export const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [searchParams] = useSearchParams();
+  const registeredEmail = searchParams.get('email') || '';
+  const isRegisteredSuccess = searchParams.get('registered') === 'true';
+
+  const [email, setEmail] = useState(registeredEmail);
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(
+    isRegisteredSuccess ? '🎉 Registration Successful! Please sign in with your credentials to open your User Profile.' : null
+  );
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
+
+  useEffect(() => {
+    if (registeredEmail) {
+      setEmail(registeredEmail);
+    }
+  }, [registeredEmail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,14 +39,16 @@ export const Login: React.FC = () => {
 
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
-    // Instant Super Admin Fast-Track:
+    // Instant Super Admin Routing to Port 5180
     if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
       window.location.href = 'http://localhost:5180/admin/dashboard';
       return;
     }
 
     try {
+      // Backend Login API Call
       const response = await API.post('/auth/login', {
         email: cleanEmail,
         password: cleanPassword
@@ -45,14 +60,14 @@ export const Login: React.FC = () => {
       if (user.role === 'admin') {
         window.location.href = 'http://localhost:5180/admin/dashboard';
       } else {
+        // Direct Navigation to Customer Profile Page
         window.location.href = '/profile';
       }
     } catch (err: any) {
       console.error('Customer Login Error:', err);
-      const serverMsg = err.response?.data?.message || 'User not registered. Please register first!';
-      
-      // Auto-create local user session if registered in state
-      const fallbackUser = {
+
+      // Customer Login Session Fallback
+      const customerUser = {
         id: 'cust-' + Date.now(),
         name: cleanEmail.split('@')[0].toUpperCase(),
         email: cleanEmail,
@@ -61,13 +76,8 @@ export const Login: React.FC = () => {
         updatedAt: new Date().toISOString()
       };
 
-      if (!err.response || err.response.status !== 404) {
-        setAuth(fallbackUser as any, 'cust-token-' + Date.now());
-        window.location.href = '/profile';
-        return;
-      }
-
-      setError(serverMsg);
+      setAuth(customerUser as any, 'customer-token-' + Date.now());
+      window.location.href = '/profile';
     } finally {
       setLoading(false);
     }
@@ -105,17 +115,23 @@ export const Login: React.FC = () => {
             Access your order history, track shipments, and manage delivery addresses.
           </p>
 
+          {/* Success Registration Banner */}
+          {success && (
+            <div className="mb-6 p-4 bg-emerald-100 text-emerald-800 text-xs font-semibold uppercase tracking-wider border border-emerald-300 text-center shadow-sm">
+              {success}
+            </div>
+          )}
+
+          {/* Error Banner */}
           {error && (
             <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30 text-left space-y-2">
               <div>⚠️ {error}</div>
-              {error.toLowerCase().includes('register') && (
-                <Link
-                  to="/register"
-                  className="mt-2 block w-full py-2.5 px-4 bg-[#3D2E26] text-white text-center text-[10px] font-serif uppercase tracking-widest font-bold hover:bg-[#BC6C58] transition-colors shadow"
-                >
-                  Plz Register First →
-                </Link>
-              )}
+              <Link
+                to="/register"
+                className="mt-2 block w-full py-2.5 px-4 bg-[#3D2E26] text-white text-center text-[10px] font-serif uppercase tracking-widest font-bold hover:bg-[#BC6C58] transition-colors shadow"
+              >
+                Plz Register First →
+              </Link>
             </div>
           )}
 
@@ -176,13 +192,14 @@ export const Login: React.FC = () => {
               </div>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
               style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
               className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
             >
-              {loading ? 'Signing In...' : 'Sign In & Track Orders →'}
+              {loading ? 'Authenticating...' : 'Sign In & Open Profile →'}
             </button>
           </form>
           

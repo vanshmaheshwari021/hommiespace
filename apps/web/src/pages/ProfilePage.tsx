@@ -89,8 +89,8 @@ export const ProfilePage: React.FC = () => {
 
             <div className="flex items-center gap-3">
               <Link to="/products">
-                <Button variant="outline" size="sm" className="text-xs font-serif uppercase tracking-wider">
-                  Browse Catalog
+                <Button variant="primary" size="sm" className="bg-[#3D2E26] text-white hover:bg-[#BC6C58] text-xs font-serif uppercase tracking-wider shadow">
+                  🛒 Proceed to Catalog & Checkout →
                 </Button>
               </Link>
               <Button 

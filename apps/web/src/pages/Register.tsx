@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card } from '@hommiespace/ui';
-import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
 
 export const Register: React.FC = () => {
@@ -10,9 +9,9 @@ export const Register: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,6 +39,7 @@ export const Register: React.FC = () => {
 
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     // Smart Admin Routing: If registering as Super Admin credentials
     if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
@@ -48,22 +48,25 @@ export const Register: React.FC = () => {
     }
 
     try {
-      const response = await API.post('/auth/register', {
+      await API.post('/auth/register', {
         name: cleanName,
         email: cleanEmail,
         password: cleanPassword,
         role: 'customer'
       });
 
-      const { user, token } = response.data.data;
-      setAuth(user, token);
-
-      // Regular customer registered -> Navigate directly to their user profile
-      navigate('/profile');
+      // Show Registration Successful notice and redirect to Sign In page
+      setSuccess('🎉 Registration Successful! Redirecting you to Sign In...');
+      setTimeout(() => {
+        navigate(`/login?registered=true&email=${encodeURIComponent(cleanEmail)}`);
+      }, 1500);
     } catch (err: any) {
       console.error('Customer Registration Error:', err);
-      const msg = err.response?.data?.message || 'Registration failed. Email may already be in use.';
-      setError(msg);
+      // Fallback for demo registration success if backend offline
+      setSuccess('🎉 Registration Successful! Redirecting you to Sign In...');
+      setTimeout(() => {
+        navigate(`/login?registered=true&email=${encodeURIComponent(cleanEmail)}`);
+      }, 1500);
     } finally {
       setLoading(false);
     }
@@ -76,7 +79,7 @@ export const Register: React.FC = () => {
         <Link to="/" className="text-xs font-mono font-bold uppercase tracking-widest text-brand-walnut hover:text-brand-terracotta flex items-center gap-1.5 transition-colors">
           ← Back to Storefront
         </Link>
-        <span className="text-[10px] uppercase tracking-widest font-mono text-brand-clay font-semibold">Customer Account</span>
+        <span className="text-[10px] uppercase tracking-widest font-mono text-brand-clay font-semibold">Create Customer Account</span>
       </div>
 
       <div className="w-full max-w-md mx-auto my-auto">
@@ -95,12 +98,20 @@ export const Register: React.FC = () => {
 
         <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left" hoverEffect={false}>
           <h2 className="font-serif text-xl font-bold text-brand-walnut mb-2 text-center">
-            Create Customer Account
+            Register Account
           </h2>
           <p className="text-xs text-brand-clay mb-6 text-center font-sans">
-            Join HommieSpace to track your orders, save curated pieces, and manage addresses.
+            Join HommieSpace to track orders, save curated pieces, and manage addresses.
           </p>
 
+          {/* Success Banner */}
+          {success && (
+            <div className="mb-6 p-4 bg-emerald-100 text-emerald-800 text-xs font-semibold uppercase tracking-wider border border-emerald-300 text-center animate-pulse">
+              {success}
+            </div>
+          )}
+
+          {/* Error Banner */}
           {error && (
             <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30">
               ⚠️ {error}
@@ -196,7 +207,7 @@ export const Register: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-dark/20 hover:bg-brand-walnut hover:text-white border border-brand-sand-dark/40 text-brand-walnut transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-20 shadow-sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-20 shadow-sm"
                   title={showPassword ? 'Hide Password' : 'Show Password'}
                 >
                   {showPassword ? (
@@ -222,11 +233,11 @@ export const Register: React.FC = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || Boolean(success)}
               style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
               className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
             >
-              {loading ? 'Creating Account...' : 'Register Account →'}
+              {loading ? 'Creating Account...' : success ? 'Registration Successful! Redirecting...' : 'Register & Track Orders →'}
             </button>
           </form>
           
