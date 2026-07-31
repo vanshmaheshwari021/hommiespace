@@ -62,11 +62,11 @@ export const Hero3DCanvas: React.FC = () => {
       {/* Warm Ambient Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal/80 via-brand-charcoal/15 to-transparent" />
 
-      {/* Interactive Product Hotspot Markers */}
+      {/* Interactive Product Hotspot Markers (Shown on Hover) */}
       {HOTSPOTS.map((spot) => (
         <div
           key={spot.id}
-          className="absolute z-20"
+          className="absolute z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none group-hover:pointer-events-auto"
           style={{ top: spot.top, left: spot.left }}
         >
           <div 
@@ -123,7 +123,7 @@ export const Hero3DCanvas: React.FC = () => {
 
         <div className="bg-brand-linen/90 dark:bg-brand-charcoal/90 border border-brand-sand-dark/30 px-3.5 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest text-brand-walnut dark:text-brand-linen shadow-lg flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-brand-terracotta animate-ping" />
-          Tap Hotspots to Explore
+          Hover Image to Reveal Hotspots
         </div>
       </div>
     </div>
