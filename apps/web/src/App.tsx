@@ -18,6 +18,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+          {/* Main Layout Pages */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<ProductListing />} />
@@ -28,9 +29,11 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/profile/orders" element={<ProfilePage />} />
             <Route path="/profile/tickets" element={<SupportTickets />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
           </Route>
+
+          {/* Dedicated Standalone Authentication Pages */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* Fallbacks */}
           <Route path="*" element={<Navigate to="/" replace />} />

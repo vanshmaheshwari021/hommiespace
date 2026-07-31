@@ -64,9 +64,30 @@ export const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4 bg-brand-linen">
-      <div className="w-full max-w-md">
-        <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl" hoverEffect={false}>
+    <div className="min-h-screen bg-brand-linen flex flex-col justify-between p-4 py-8">
+      {/* Top Header Navigation */}
+      <div className="max-w-md mx-auto w-full flex items-center justify-between mb-4">
+        <Link to="/" className="text-xs font-mono font-bold uppercase tracking-widest text-brand-walnut hover:text-brand-terracotta flex items-center gap-1.5 transition-colors">
+          ← Back to Storefront
+        </Link>
+        <span className="text-[10px] uppercase tracking-widest font-mono text-brand-clay font-semibold">Customer Account</span>
+      </div>
+
+      <div className="w-full max-w-md mx-auto my-auto">
+        {/* Brand Header */}
+        <div className="text-center mb-6">
+          <Link to="/" className="inline-block">
+            <h1 className="font-serif text-3xl font-black tracking-wider">
+              <span className="text-[#3D2E26]">HOMMIE</span>
+              <span className="text-brand-terracotta">SPACE</span>
+            </h1>
+          </Link>
+          <p className="text-brand-clay text-[10px] uppercase tracking-widest font-semibold mt-1">
+            Quiet Luxury Furniture & Decor
+          </p>
+        </div>
+
+        <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left" hoverEffect={false}>
           <h2 className="font-serif text-xl font-bold text-brand-walnut mb-2 text-center">
             Create Customer Account
           </h2>
@@ -75,12 +96,12 @@ export const Register: React.FC = () => {
           </p>
 
           {error && (
-            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30 text-left">
+            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30">
               ⚠️ {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5 text-left">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Full Name
@@ -143,7 +164,7 @@ export const Register: React.FC = () => {
                     <>
                       <svg className="w-3.5 h-3.5 text-brand-clay" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
                       <span>SHOW</span>
                     </>
@@ -192,6 +213,10 @@ export const Register: React.FC = () => {
             </div>
           </div>
         </Card>
+      </div>
+
+      <div className="text-[10px] text-brand-clay uppercase tracking-widest text-center mt-6">
+        © 2026 HommieSpace Design Inc.
       </div>
     </div>
   );

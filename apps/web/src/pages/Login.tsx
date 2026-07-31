@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
@@ -37,7 +37,7 @@ export const Login: React.FC = () => {
       const { user, token } = response.data.data;
       setAuth(user, token);
 
-      // Successfully signed in -> Navigate to Orders tracking page
+      // Successfully signed in -> Navigate to Customer Orders tracking page
       navigate('/orders');
     } catch (err: any) {
       console.error('Customer Login Error:', err);
@@ -49,9 +49,30 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center p-4 bg-brand-linen">
-      <div className="w-full max-w-md">
-        <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl" hoverEffect={false}>
+    <div className="min-h-screen bg-brand-linen flex flex-col justify-between p-4 py-8">
+      {/* Top Header Navigation */}
+      <div className="max-w-md mx-auto w-full flex items-center justify-between mb-4">
+        <Link to="/" className="text-xs font-mono font-bold uppercase tracking-widest text-brand-walnut hover:text-brand-terracotta flex items-center gap-1.5 transition-colors">
+          ← Back to Storefront
+        </Link>
+        <span className="text-[10px] uppercase tracking-widest font-mono text-brand-clay font-semibold">Customer Sign In</span>
+      </div>
+
+      <div className="w-full max-w-md mx-auto my-auto">
+        {/* Brand Header */}
+        <div className="text-center mb-6">
+          <Link to="/" className="inline-block">
+            <h1 className="font-serif text-3xl font-black tracking-wider">
+              <span className="text-[#3D2E26]">HOMMIE</span>
+              <span className="text-brand-terracotta">SPACE</span>
+            </h1>
+          </Link>
+          <p className="text-brand-clay text-[10px] uppercase tracking-widest font-semibold mt-1">
+            Quiet Luxury Furniture & Decor
+          </p>
+        </div>
+
+        <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left" hoverEffect={false}>
           <h2 className="font-serif text-xl font-bold text-brand-walnut mb-2 text-center">
             Sign In to Customer Account
           </h2>
@@ -59,20 +80,13 @@ export const Login: React.FC = () => {
             Access your order history, track shipments, and manage delivery addresses.
           </p>
 
-          {/* Error Banner with Registration Option */}
           {error && (
-            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30 text-left space-y-2">
-              <div>⚠️ {error}</div>
-              <div className="pt-2 border-t border-brand-terracotta/20 flex justify-between items-center text-[10px]">
-                <span>No account found?</span>
-                <a href="http://localhost:5174/register" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-brand-walnut uppercase">
-                  Register Studio / Partner →
-                </a>
-              </div>
+            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30">
+              ⚠️ {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6 text-left">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Email Address
@@ -139,13 +153,25 @@ export const Login: React.FC = () => {
             </button>
           </form>
           
-          <div className="mt-6 text-center text-xs text-brand-clay font-sans">
-            <span>Want to sell items as a partner? </span>
-            <a href="http://localhost:5174/register" target="_blank" rel="noopener noreferrer" className="text-brand-terracotta font-semibold hover:underline">
-              Register a Studio
-            </a>
+          <div className="mt-6 text-center text-xs text-brand-clay font-sans flex flex-col gap-2">
+            <div>
+              <span>No account yet? </span>
+              <Link to="/register" className="text-brand-terracotta font-semibold hover:underline">
+                Create an account
+              </Link>
+            </div>
+            <div className="pt-2 border-t border-brand-sand-dark/15 text-[11px]">
+              <span>Want to sell items as a partner studio? </span>
+              <a href="http://localhost:5174/register" target="_blank" rel="noopener noreferrer" className="text-brand-walnut font-bold hover:underline">
+                Register Studio →
+              </a>
+            </div>
           </div>
         </Card>
+      </div>
+
+      <div className="text-[10px] text-brand-clay uppercase tracking-widest text-center mt-6">
+        © 2026 HommieSpace Design Inc.
       </div>
     </div>
   );
