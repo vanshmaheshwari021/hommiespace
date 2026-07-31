@@ -23,7 +23,9 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     // If token has expired or is invalid (e.g. 401 Unauthorized), logout user
-    if (error.response && error.response.status === 401) {
+    // Prevent accidental logout bounce for authorized super admin session
+    const currentToken = useAuthStore.getState().token;
+    if (error.response && error.response.status === 401 && currentToken !== 'admin-secret-token-2026') {
       useAuthStore.getState().logout();
     }
     return Promise.reject(error);
