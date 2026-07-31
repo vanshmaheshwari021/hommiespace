@@ -29,8 +29,15 @@ export const Login: React.FC = () => {
 
     // Instant Super Admin Fast-Track:
     if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
-      const adminUser = { id: 'super-admin-01', name: 'Super Administrator', email: 'admin@hommiespace.com', role: 'admin' };
-      setAuth(adminUser, 'admin-secret-token-2026', null);
+      const adminUser = {
+        id: 'super-admin-01',
+        name: 'Super Administrator',
+        email: 'admin@hommiespace.com',
+        role: 'admin',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      setAuth(adminUser as any, 'admin-secret-token-2026', null);
       window.location.href = '/admin/dashboard';
       return;
     }
