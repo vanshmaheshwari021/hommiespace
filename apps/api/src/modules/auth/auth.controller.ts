@@ -68,13 +68,13 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     }
 
     if (!user) {
-      res.status(401).json({ status: 'error', message: 'Invalid email or password' });
+      res.status(404).json({ status: 'error', message: 'User not registered. Please register first!' });
       return;
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch && user.role !== 'admin') {
-      res.status(401).json({ status: 'error', message: 'Invalid email or password' });
+      res.status(401).json({ status: 'error', message: 'Incorrect password. Please try again.' });
       return;
     }
 

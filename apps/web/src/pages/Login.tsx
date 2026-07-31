@@ -90,8 +90,16 @@ export const Login: React.FC = () => {
           </p>
 
           {error && (
-            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30">
-              ⚠️ {error}
+            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30 text-left space-y-2">
+              <div>⚠️ {error}</div>
+              {error.toLowerCase().includes('register') && (
+                <Link
+                  to="/register"
+                  className="mt-2 block w-full py-2.5 px-4 bg-[#3D2E26] text-white text-center text-[10px] font-serif uppercase tracking-widest font-bold hover:bg-[#BC6C58] transition-colors shadow"
+                >
+                  Plz Register First →
+                </Link>
+              )}
             </div>
           )}
 
