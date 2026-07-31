@@ -17,14 +17,15 @@ interface OrderItem {
 }
 
 interface Order {
-  _id: string;
+  _id?: string;
+  id?: string;
   totalPrice?: number;
   totalAmount?: number;
   total?: number;
   orderStatus?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  createdAt: string;
-  items: OrderItem[];
+  createdAt?: string;
+  items?: OrderItem[];
   shippingAddress?: {
     street?: string;
     city?: string;
@@ -283,16 +284,22 @@ export const ProfilePage: React.FC = () => {
                 </Link>
               </Card>
             ) : (
-              orders.map((order) => {
+              orders.map((order, index) => {
                 const currentStatus = order.status || order.orderStatus || 'pending';
                 const totalVal = order.totalPrice || order.totalAmount || order.total || 0;
+                const rawId = order._id || order.id || `HS-ORDER-00${index + 1}`;
+                const displayId = String(rawId).slice(-8).toUpperCase();
+                const formattedDate = order.createdAt 
+                  ? new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                  : 'Recent';
+
                 return (
-                  <Card key={order._id} className="p-6 bg-white border border-brand-sand-dark/25 shadow-md" hoverEffect={false}>
+                  <Card key={rawId || index} className="p-6 bg-white border border-brand-sand-dark/25 shadow-md" hoverEffect={false}>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-brand-sand-dark/15 gap-4">
                       <div>
                         <div className="flex items-center gap-3">
                           <span className="font-mono text-xs font-bold text-brand-walnut">
-                            Order #{order._id.substring(order._id.length - 8).toUpperCase()}
+                            Order #{displayId}
                           </span>
                           <span className={`px-2.5 py-0.5 rounded-full text-[9px] uppercase font-bold tracking-widest ${
                             currentStatus === 'delivered' 
@@ -305,7 +312,7 @@ export const ProfilePage: React.FC = () => {
                           </span>
                         </div>
                         <span className="text-[10px] text-brand-clay font-mono block mt-1">
-                          Placed on {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          Placed on {formattedDate}
                         </span>
                       </div>
 
