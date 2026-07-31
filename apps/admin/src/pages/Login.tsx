@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Card } from '@hommiespace/ui';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/auth.js';
 
 export const Login: React.FC = () => {
@@ -9,8 +8,13 @@ export const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
 
+  useEffect(() => {
+    console.log("🔥 Login component mounted cleanly!");
+  }, []);
+
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    console.log("🔥 handleSubmit called!");
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
@@ -46,7 +50,8 @@ export const Login: React.FC = () => {
           </p>
         </div>
 
-        <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left" hoverEffect={false}>
+        {/* Clean Standard Card Container (No 3D Stacking Overlay) */}
+        <div className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left relative z-10">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-brand-sand-dark/20">
             <div>
               <h2 className="font-serif text-xl font-bold text-brand-walnut">
@@ -69,7 +74,7 @@ export const Login: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6 text-left">
+          <form onSubmit={handleSubmit} className="space-y-6 text-left relative z-20">
             <div>
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Super Admin Email
@@ -80,7 +85,7 @@ export const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
+                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none relative z-30"
                 placeholder="admin@hommiespace.com"
               />
             </div>
@@ -89,7 +94,7 @@ export const Login: React.FC = () => {
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Super Admin Password
               </label>
-              <div className="relative">
+              <div className="relative z-30">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -101,8 +106,11 @@ export const Login: React.FC = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-20 shadow-sm"
+                  onClick={() => {
+                    console.log("🔥 SHOW/HIDE CLICKED!");
+                    setShowPassword((prev) => !prev);
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-40 shadow-sm"
                   title={showPassword ? 'Hide Password' : 'Show Password'}
                 >
                   {showPassword ? (
@@ -131,12 +139,12 @@ export const Login: React.FC = () => {
               type="button"
               onClick={() => handleSubmit()}
               style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
-              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all cursor-pointer shadow-lg active:scale-95 border-none block"
+              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all cursor-pointer shadow-lg active:scale-95 border-none block relative z-30"
             >
               Sign In to Super Admin Panel →
             </button>
           </form>
-        </Card>
+        </div>
       </div>
     </div>
   );
