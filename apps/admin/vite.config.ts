@@ -2,11 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// https://vite.dev/config/
+// Partner & Admin Portal Vite Config - Dedicated Port 5180
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5174,
+    port: 5180,
     strictPort: true,
   },
   resolve: {

@@ -204,7 +204,7 @@ export const PublicLayout: React.FC = () => {
               <h4 className="font-serif text-sm font-bold text-brand-linen mb-4 uppercase tracking-widest">Studio Network</h4>
               <ul className="space-y-2 text-xs text-brand-sand-dark">
                 <li><Link to="/vendor/onboarding" className="hover:text-brand-linen transition-colors">Become a Studio Partner</Link></li>
-                <li><a href="http://localhost:5174" target="_blank" rel="noreferrer" className="hover:text-brand-linen transition-colors">Partner Dashboard</a></li>
+                <li><a href="http://localhost:5180" target="_blank" rel="noreferrer" className="hover:text-brand-linen transition-colors">Partner Dashboard</a></li>
                 <li><Link to="/support" className="hover:text-brand-linen transition-colors">Design Support Desk</Link></li>
               </ul>
             </div>

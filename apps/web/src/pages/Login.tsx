@@ -30,7 +30,7 @@ export const Login: React.FC = () => {
 
     // Instant Super Admin Fast-Track:
     if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
-      window.location.href = 'http://localhost:5174/admin/dashboard';
+      window.location.href = 'http://localhost:5180/admin/dashboard';
       return;
     }
 
@@ -44,7 +44,7 @@ export const Login: React.FC = () => {
       setAuth(user, token);
 
       if (user.role === 'admin') {
-        window.location.href = 'http://localhost:5174/admin/dashboard';
+        window.location.href = 'http://localhost:5180/admin/dashboard';
       } else {
         navigate('/profile');
       }
@@ -171,7 +171,7 @@ export const Login: React.FC = () => {
             </div>
             <div className="pt-2 border-t border-brand-sand-dark/15 text-[11px]">
               <span>Want to sell items as a partner studio? </span>
-              <a href="http://localhost:5174/register" target="_blank" rel="noopener noreferrer" className="text-brand-walnut font-bold hover:underline">
+              <a href="http://localhost:5180/register" target="_blank" rel="noopener noreferrer" className="text-brand-walnut font-bold hover:underline">
                 Register Studio →
               </a>
             </div>

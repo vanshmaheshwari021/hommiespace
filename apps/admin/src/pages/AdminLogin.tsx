@@ -93,7 +93,7 @@ export const AdminLogin: React.FC = () => {
             HOMMIE<span className="text-brand-terracotta">SPACE</span>
           </h1>
           <p className="text-brand-sand-dark text-[10px] uppercase tracking-widest font-mono font-semibold">
-            Super Admin Security Portal · Port 5174
+            Super Admin Security Portal · Port 5180
           </p>
         </div>
 
