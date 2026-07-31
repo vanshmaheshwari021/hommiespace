@@ -45,17 +45,15 @@ export const Login: React.FC = () => {
     const cleanPassword = password.trim();
 
     if (!cleanEmail || !cleanPassword) {
-      setError('Please enter both Super Admin email and password.');
+      setError('Please enter both email and password.');
       return;
     }
 
     setLoading(true);
     setError(null);
 
-    const isSuperAdminEmail = cleanEmail === 'admin@hommiespace.com';
-
-    // 1. Fast-Track Authentication ONLY for exact Super Admin credentials
-    if (isSuperAdminEmail && cleanPassword === 'password123') {
+    // 1. Fast-Track Authentication for Super Admin
+    if (cleanEmail === 'admin@hommiespace.com' && cleanPassword === 'password123') {
       setAttemptsLeft(3);
       const adminUser = {
         id: 'super-admin-01',
@@ -72,7 +70,37 @@ export const Login: React.FC = () => {
       return;
     }
 
-    // 2. Backend Database API Authentication
+    // 2. Fast-Track Authentication for Vendor Partner Studio
+    if (cleanEmail === 'vendor@hommiespace.com' && cleanPassword === 'password123') {
+      setAttemptsLeft(3);
+      const vendorUser = {
+        id: 'vendor-studio-01',
+        name: 'Nordic Craft Studio',
+        email: 'vendor@hommiespace.com',
+        role: 'vendor' as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      const vendorProfile = {
+        id: 'v-studio-01',
+        userId: 'vendor-studio-01',
+        businessName: 'Nordic Craft Studio',
+        logo: '/logo.png',
+        status: 'approved' as const,
+        commissionRate: 15,
+        rating: 4.9,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      setAuth(vendorUser as any, 'vendor-secret-token-2026', vendorProfile as any);
+      setLoading(false);
+      window.location.href = '/vendor/dashboard';
+      return;
+    }
+
+    // 3. Backend Database API Authentication
     try {
       const response = await API.post('/auth/login', {
         email: cleanEmail,
@@ -80,21 +108,31 @@ export const Login: React.FC = () => {
       });
 
       const { user, token } = response.data.data;
+      let vendor = null;
 
-      if (user.role !== 'admin' && cleanEmail !== 'admin@hommiespace.com') {
-        setError('Forbidden: Only Super Administrators can access this portal.');
-        setLoading(false);
-        return;
+      if (user.role === 'vendor') {
+        try {
+          const meResponse = await API.get('/auth/me', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          vendor = meResponse.data.data.vendor;
+        } catch (meErr) {
+          console.warn('Could not fetch vendor profile:', meErr);
+        }
       }
 
-      setAuth(user, token, null);
+      setAuth(user, token, vendor);
       setAttemptsLeft(3);
       setLoading(false);
-      window.location.href = '/admin/dashboard';
-    } catch (err: any) {
-      console.error('Super Admin Login Error:', err);
 
-      // Decrement remaining attempts on wrong password
+      if (user.role === 'admin') {
+        window.location.href = '/admin/dashboard';
+      } else {
+        window.location.href = '/vendor/dashboard';
+      }
+    } catch (err: any) {
+      console.error('Portal Sign In Error:', err);
+
       const newAttempts = attemptsLeft - 1;
       setAttemptsLeft(newAttempts);
 
@@ -102,7 +140,7 @@ export const Login: React.FC = () => {
         setLockoutSeconds(60);
         setError('🔒 Too many failed login attempts. Portal locked for 60 seconds.');
       } else {
-        const serverMsg = err.response?.data?.message || 'Invalid Super Admin email or password.';
+        const serverMsg = err.response?.data?.message || 'Invalid email address or password.';
         setError(`⚠️ ${serverMsg} (${newAttempts} attempt${newAttempts === 1 ? '' : 's'} remaining)`);
       }
 
@@ -119,7 +157,7 @@ export const Login: React.FC = () => {
             HOMMIE<span className="text-brand-terracotta">SPACE</span>
           </h1>
           <p className="text-brand-clay text-xs uppercase tracking-widest font-semibold">
-            Super Admin Executive Portal
+            Executive Admin & Vendor Partner Portal
           </p>
         </div>
 
@@ -127,10 +165,10 @@ export const Login: React.FC = () => {
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-brand-sand-dark/20">
             <div>
               <h2 className="font-serif text-xl font-bold text-brand-walnut">
-                Super Admin Sign In
+                Partner & Admin Sign In
               </h2>
               <p className="text-xs text-brand-clay mt-0.5 font-sans">
-                Executive Control System
+                Management Control System
               </p>
             </div>
 
@@ -156,7 +194,7 @@ export const Login: React.FC = () => {
           <form onSubmit={handleSubmit} autoComplete="off" className="space-y-6 text-left relative z-20">
             <div>
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
-                Super Admin Email
+                Email Address
               </label>
               <input
                 type="email"
@@ -173,7 +211,7 @@ export const Login: React.FC = () => {
 
             <div>
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
-                Super Admin Password
+                Password
               </label>
               <div className="relative z-30">
                 <input
@@ -222,7 +260,7 @@ export const Login: React.FC = () => {
               style={{ backgroundColor: lockoutSeconds > 0 ? '#6B7280' : '#3D2E26', color: '#FAF8F5' }}
               className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all cursor-pointer shadow-lg active:scale-95 border-none block relative z-30 disabled:opacity-50"
             >
-              {lockoutSeconds > 0 ? `Locked (${lockoutSeconds}s)` : loading ? 'Authenticating...' : 'Sign In to Super Admin Panel →'}
+              {lockoutSeconds > 0 ? `Locked (${lockoutSeconds}s)` : loading ? 'Authenticating...' : 'Sign In to Portal →'}
             </button>
           </form>
         </div>
