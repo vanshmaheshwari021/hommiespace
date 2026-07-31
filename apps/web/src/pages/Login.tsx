@@ -215,7 +215,8 @@ export const Login: React.FC = () => {
 
             {/* Submit Button */}
             <button
-              type="submit"
+              type="button"
+              onClick={(e) => handleSubmit(e)}
               disabled={loading}
               style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
               className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
