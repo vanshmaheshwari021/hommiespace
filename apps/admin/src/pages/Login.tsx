@@ -34,7 +34,9 @@ export const Login: React.FC = () => {
   }, [lockoutSeconds]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // 1. Always prevent default form submission first
+    e.preventDefault();
+    console.log('🔥 ADMIN SUBMIT TRIGGERED! Email:', email, 'Password:', password);
+    alert('🔥 Login Button Clicked! Attempting redirect to /admin/dashboard...');
     if (loading || lockoutSeconds > 0) return;
 
     const cleanEmail = email.trim().toLowerCase();
@@ -228,6 +230,7 @@ export const Login: React.FC = () => {
             {/* Prominent Native Submit Button */}
             <button
               type="submit"
+              onClick={() => console.log('🔥 BUTTON ONCLICK FIRED!')}
               disabled={loading || lockoutSeconds > 0}
               style={{ backgroundColor: lockoutSeconds > 0 ? '#6B7280' : '#3D2E26', color: '#FAF8F5' }}
               className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
