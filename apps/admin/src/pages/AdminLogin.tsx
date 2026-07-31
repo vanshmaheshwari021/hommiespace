@@ -4,8 +4,8 @@ import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
 
 export const AdminLogin: React.FC = () => {
-  const [email, setEmail] = useState('admin@hommiespace.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

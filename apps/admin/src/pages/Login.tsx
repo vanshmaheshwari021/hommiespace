@@ -6,8 +6,8 @@ import API from '../api/index.js';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@hommiespace.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
