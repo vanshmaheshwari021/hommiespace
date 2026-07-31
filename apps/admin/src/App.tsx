@@ -1,5 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useAuthStore } from './store/auth.js';
 import Login from './pages/Login.js';
 import Register from './pages/Register.js';
 import AdminLogin from './pages/AdminLogin.js';
@@ -23,10 +25,36 @@ import Unauthorized from './pages/Unauthorized.js';
 
 const queryClient = new QueryClient();
 
+// Cross-Origin Auth Token Handoff Handler
+function AuthHandoffHandler() {
+  const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const userJson = params.get('user');
+
+    if (token && userJson) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userJson));
+        setAuth(user, token, null);
+        window.history.replaceState({}, document.title, '/admin/dashboard');
+        navigate('/admin/dashboard', { replace: true });
+      } catch (err) {
+        console.error('Failed to parse cross-origin token handoff:', err);
+      }
+    }
+  }, [setAuth, navigate]);
+
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <AuthHandoffHandler />
         <Routes>
           {/* Public Auth Routes */}
           <Route path="/login" element={<Login />} />
