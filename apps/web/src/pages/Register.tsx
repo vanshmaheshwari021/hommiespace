@@ -41,6 +41,12 @@ export const Register: React.FC = () => {
     setLoading(true);
     setError(null);
 
+    // Smart Admin Routing: If registering as Super Admin credentials
+    if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
+      window.location.href = 'http://localhost:5174/admin/dashboard';
+      return;
+    }
+
     try {
       const response = await API.post('/auth/register', {
         name: cleanName,
@@ -52,8 +58,8 @@ export const Register: React.FC = () => {
       const { user, token } = response.data.data;
       setAuth(user, token);
 
-      // Successfully registered -> Navigate to Customer Orders tracking page
-      navigate('/orders');
+      // Regular customer registered -> Navigate directly to their user profile
+      navigate('/profile');
     } catch (err: any) {
       console.error('Customer Registration Error:', err);
       const msg = err.response?.data?.message || 'Registration failed. Email may already be in use.';
@@ -194,7 +200,7 @@ export const Register: React.FC = () => {
               style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
               className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
             >
-              {loading ? 'Creating Account...' : 'Register & Track Orders →'}
+              {loading ? 'Creating Account...' : 'Register Account →'}
             </button>
           </form>
           
