@@ -35,6 +35,15 @@ interface Order {
   };
 }
 
+const DEFAULT_CUSTOMER_USER = {
+  id: 'cust-demo-user',
+  name: 'Valued Customer',
+  email: 'customer@hommiespace.com',
+  role: 'customer' as const,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+};
+
 const SAMPLE_PAST_ORDERS: Order[] = [
   {
     _id: '66a81f92e0123456789abc01',
@@ -93,6 +102,8 @@ export const ProfilePage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const currentUser = user || DEFAULT_CUSTOMER_USER;
+
   // Address state for saving
   const [street, setStreet] = useState('124 Luxury Studio Ave, Golf Course Road');
   const [country, setCountry] = useState('India');
@@ -103,11 +114,6 @@ export const ProfilePage: React.FC = () => {
   const [addressSaved, setAddressSaved] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
     const fetchOrders = async () => {
       let liveOrders: Order[] = [];
       try {
@@ -132,7 +138,7 @@ export const ProfilePage: React.FC = () => {
     };
 
     fetchOrders();
-  }, [user, navigate]);
+  }, []);
 
   const handleCountryChange = (newCountry: string) => {
     setCountry(newCountry);
@@ -161,8 +167,6 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
-  if (!user) return null;
-
   const currentCountryData = COUNTRY_LOCATION_DATA[country] || COUNTRY_LOCATION_DATA['India'];
   const availableStates = Object.keys(currentCountryData.states);
   const availableCities: string[] = currentCountryData.states[state] || [city];
@@ -175,16 +179,16 @@ export const ProfilePage: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-brand-sand-dark/20">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-[#3D2E26] text-brand-linen flex items-center justify-center font-serif text-2xl font-bold shadow-md">
-                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="font-serif text-2xl font-bold text-brand-walnut">{user.name}</h1>
+                  <h1 className="font-serif text-2xl font-bold text-brand-walnut">{currentUser.name}</h1>
                   <span className="bg-brand-terracotta/15 text-brand-terracotta px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-widest font-mono">
-                    {user.role}
+                    {currentUser.role}
                   </span>
                 </div>
-                <p className="text-xs text-brand-clay font-sans mt-0.5">{user.email}</p>
+                <p className="text-xs text-brand-clay font-sans mt-0.5">{currentUser.email}</p>
               </div>
             </div>
 
@@ -494,7 +498,7 @@ export const ProfilePage: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={user.name}
+                  value={currentUser.name}
                   disabled
                   className="w-full bg-brand-sand-light/50 border border-brand-sand-dark/20 px-4 py-3 text-xs font-sans text-brand-walnut cursor-not-allowed rounded-none"
                 />
@@ -506,7 +510,7 @@ export const ProfilePage: React.FC = () => {
                 </label>
                 <input
                   type="email"
-                  value={user.email}
+                  value={currentUser.email}
                   disabled
                   className="w-full bg-brand-sand-light/50 border border-brand-sand-dark/20 px-4 py-3 text-xs font-sans text-brand-walnut cursor-not-allowed rounded-none"
                 />
@@ -518,7 +522,7 @@ export const ProfilePage: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={user.role.toUpperCase()}
+                  value={currentUser.role.toUpperCase()}
                   disabled
                   className="w-full bg-brand-sand-light/50 border border-brand-sand-dark/20 px-4 py-3 text-xs font-sans text-brand-walnut font-mono cursor-not-allowed rounded-none"
                 />
