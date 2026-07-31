@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
 
@@ -26,8 +25,8 @@ export const Login: React.FC = () => {
     }
   }, [registeredEmail]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // 1. Prevent native form reload
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (loading) return;
 
     const cleanEmail = email.trim();
@@ -42,7 +41,7 @@ export const Login: React.FC = () => {
     setError(null);
     setSuccess(null);
 
-    // Instant Super Admin Routing with Token Query Param Handoff
+    // Instant Super Admin Routing
     if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
       const adminUser = {
         id: 'super-admin-01',
@@ -58,32 +57,28 @@ export const Login: React.FC = () => {
     }
 
     try {
-      // 2. Async/Await Backend Login API Call
       const response = await API.post('/auth/login', {
         email: cleanEmail,
         password: cleanPassword
       });
 
-      console.log('Raw Customer Login Response:', response.data);
-
       const { user, token } = response.data.data;
+
+      setAuth(user, token);
+      setLoading(false);
 
       if (user.role === 'admin') {
         window.location.href = `http://localhost:5180/login?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(user))}`;
       } else {
-        // Save auth session token & user state BEFORE navigate call for customer
-        setAuth(user, token);
-        setLoading(false);
-        // 4. Hard navigate to Customer Profile Page
         window.location.href = '/profile';
       }
     } catch (err: any) {
       console.error('Customer Login Error:', err);
 
-      const serverMsg = err.response?.data?.message || 'Invalid email or password.';
-      setError(serverMsg);
+      const serverMsg = err.response?.data?.message || 'Invalid email address or password.';
+      setError(`⚠️ ${serverMsg}`);
 
-      // Only fallback on true network failure (backend unreachable)
+      // Customer Session Fallback ONLY for true network disconnects
       if (!err.response) {
         const customerUser = {
           id: 'cust-' + Date.now(),
@@ -95,7 +90,7 @@ export const Login: React.FC = () => {
         };
         setAuth(customerUser as any, 'customer-token-' + Date.now());
         setLoading(false);
-        navigate('/profile');
+        window.location.href = '/profile';
         return;
       }
 
@@ -127,7 +122,7 @@ export const Login: React.FC = () => {
           </p>
         </div>
 
-        <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left" hoverEffect={false}>
+        <div className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left relative z-10">
           <h2 className="font-serif text-xl font-bold text-brand-walnut mb-2 text-center">
             Sign In to Customer Account
           </h2>
@@ -145,18 +140,18 @@ export const Login: React.FC = () => {
           {/* Error Banner */}
           {error && (
             <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30 text-left space-y-2">
-              <div>⚠️ {error}</div>
+              <div>{error}</div>
               <button
                 type="button"
                 onClick={() => navigate('/register')}
-                className="mt-2 block w-full py-2.5 px-4 bg-[#3D2E26] text-white text-center text-[10px] font-serif uppercase tracking-widest font-bold hover:bg-[#BC6C58] transition-colors shadow cursor-pointer"
+                className="mt-2 block w-full py-2.5 px-4 bg-[#3D2E26] text-white text-center text-[10px] font-serif uppercase tracking-widest font-bold hover:bg-[#BC6C58] transition-colors shadow cursor-pointer relative z-40"
               >
                 Go to Registration Page →
               </button>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 text-left relative z-20">
             <div>
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Email Address
@@ -167,7 +162,7 @@ export const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
+                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none relative z-30"
                 placeholder="you@example.com"
               />
             </div>
@@ -176,7 +171,7 @@ export const Login: React.FC = () => {
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Password
               </label>
-              <div className="relative">
+              <div className="relative z-30">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -189,7 +184,7 @@ export const Login: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-20 shadow-sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-40 shadow-sm"
                   title={showPassword ? 'Hide Password' : 'Show Password'}
                 >
                   {showPassword ? (
@@ -213,13 +208,13 @@ export const Login: React.FC = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* Direct Action Submit Button */}
             <button
               type="button"
-              onClick={(e) => handleSubmit(e)}
+              onClick={() => handleSubmit()}
               disabled={loading}
               style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
-              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
+              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block relative z-30"
             >
               {loading ? 'Authenticating...' : 'Sign In & Open Profile →'}
             </button>
@@ -239,7 +234,7 @@ export const Login: React.FC = () => {
               </a>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
 
       <div className="text-[10px] text-brand-clay uppercase tracking-widest text-center mt-6">

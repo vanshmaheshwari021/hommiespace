@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Card } from '@hommiespace/ui';
 import API from '../api/index.js';
 
 export const Register: React.FC = () => {
@@ -14,9 +13,9 @@ export const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loading) return;
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (loading || Boolean(success)) return;
 
     const cleanName = name.trim();
     const cleanEmail = email.trim();
@@ -41,9 +40,9 @@ export const Register: React.FC = () => {
     setError(null);
     setSuccess(null);
 
-    // Smart Admin Routing: If registering as Super Admin credentials
+    // Smart Admin Routing for admin@hommiespace.com
     if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
-      window.location.href = 'http://localhost:5180/admin/dashboard';
+      window.location.href = 'http://localhost:5180/login';
       return;
     }
 
@@ -55,18 +54,24 @@ export const Register: React.FC = () => {
         role: 'customer'
       });
 
-      // Show Registration Successful notice and redirect to Sign In page
       setSuccess('🎉 Registration Successful! Redirecting you to Sign In...');
       setTimeout(() => {
         navigate(`/login?registered=true&email=${encodeURIComponent(cleanEmail)}`);
       }, 1500);
     } catch (err: any) {
       console.error('Customer Registration Error:', err);
-      // Fallback for demo registration success if backend offline
-      setSuccess('🎉 Registration Successful! Redirecting you to Sign In...');
-      setTimeout(() => {
-        navigate(`/login?registered=true&email=${encodeURIComponent(cleanEmail)}`);
-      }, 1500);
+      const serverMsg = err.response?.data?.message || 'Registration failed. Please check your information.';
+
+      // Offline Demo Fallback
+      if (!err.response) {
+        setSuccess('🎉 Registration Successful! Redirecting you to Sign In...');
+        setTimeout(() => {
+          navigate(`/login?registered=true&email=${encodeURIComponent(cleanEmail)}`);
+        }, 1500);
+        return;
+      }
+
+      setError(`⚠️ ${serverMsg}`);
     } finally {
       setLoading(false);
     }
@@ -96,7 +101,7 @@ export const Register: React.FC = () => {
           </p>
         </div>
 
-        <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left" hoverEffect={false}>
+        <div className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left relative z-10">
           <h2 className="font-serif text-xl font-bold text-brand-walnut mb-2 text-center">
             Register Account
           </h2>
@@ -114,11 +119,11 @@ export const Register: React.FC = () => {
           {/* Error Banner */}
           {error && (
             <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30">
-              ⚠️ {error}
+              {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5 text-left relative z-20">
             <div>
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Full Name
@@ -129,7 +134,7 @@ export const Register: React.FC = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
+                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none relative z-30"
                 placeholder="Jane Doe"
               />
             </div>
@@ -144,7 +149,7 @@ export const Register: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
+                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none relative z-30"
                 placeholder="jane@example.com"
               />
             </div>
@@ -153,7 +158,7 @@ export const Register: React.FC = () => {
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Password
               </label>
-              <div className="relative">
+              <div className="relative z-30">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -166,7 +171,7 @@ export const Register: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-20 shadow-sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-40 shadow-sm"
                   title={showPassword ? 'Hide Password' : 'Show Password'}
                 >
                   {showPassword ? (
@@ -194,7 +199,7 @@ export const Register: React.FC = () => {
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Confirm Password
               </label>
-              <div className="relative">
+              <div className="relative z-30">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="confirmPassword"
@@ -207,7 +212,7 @@ export const Register: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-20 shadow-sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-40 shadow-sm"
                   title={showPassword ? 'Hide Password' : 'Show Password'}
                 >
                   {showPassword ? (
@@ -232,10 +237,11 @@ export const Register: React.FC = () => {
             </div>
 
             <button
-              type="submit"
+              type="button"
+              onClick={() => handleSubmit()}
               disabled={loading || Boolean(success)}
               style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
-              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
+              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block relative z-30"
             >
               {loading ? 'Creating Account...' : success ? 'Registration Successful! Redirecting...' : 'Register & Track Orders →'}
             </button>
@@ -255,7 +261,7 @@ export const Register: React.FC = () => {
               </a>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
 
       <div className="text-[10px] text-brand-clay uppercase tracking-widest text-center mt-6">
