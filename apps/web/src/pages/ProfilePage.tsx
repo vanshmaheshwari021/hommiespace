@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Card, Button } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
+import { COUNTRIES_LIST, COUNTRY_LOCATION_DATA, lookupPinCode } from '../utils/location.js';
 
 interface OrderItem {
   product: {
@@ -25,6 +26,7 @@ interface Order {
     city?: string;
     state?: string;
     zipCode?: string;
+    country?: string;
     phone?: string;
   };
 }
@@ -38,9 +40,10 @@ export const ProfilePage: React.FC = () => {
 
   // Address state for saving
   const [street, setStreet] = useState('124 Luxury Studio Ave, Golf Course Road');
-  const [city, setCity] = useState('Gurugram / NCR');
-  const [state, setState] = useState('Haryana');
-  const [zipCode, setZipCode] = useState('122002');
+  const [country, setCountry] = useState('India');
+  const [state, setState] = useState('Punjab & Haryana');
+  const [city, setCity] = useState('Gurugram');
+  const [pinCode, setPinCode] = useState('122001');
   const [phone, setPhone] = useState('+91 98765 43210');
   const [addressSaved, setAddressSaved] = useState(false);
 
@@ -64,7 +67,38 @@ export const ProfilePage: React.FC = () => {
     fetchOrders();
   }, [user, navigate]);
 
+  const handleCountryChange = (newCountry: string) => {
+    setCountry(newCountry);
+    const countryData = COUNTRY_LOCATION_DATA[newCountry] || COUNTRY_LOCATION_DATA['India'];
+    const availableStates = Object.keys(countryData.states);
+    const firstState = availableStates[0] || '';
+    const firstCity = countryData.states[firstState]?.[0] || '';
+    setState(firstState);
+    setCity(firstCity);
+  };
+
+  const handleStateChange = (stVal: string) => {
+    setState(stVal);
+    const countryData = COUNTRY_LOCATION_DATA[country] || COUNTRY_LOCATION_DATA['India'];
+    const available = countryData.states[stVal] || [];
+    setCity(available[0] || '');
+  };
+
+  const handlePinCodeChange = (pin: string) => {
+    setPinCode(pin);
+    const match = lookupPinCode(pin);
+    if (match) {
+      setCountry(match.country);
+      setState(match.state);
+      setCity(match.city);
+    }
+  };
+
   if (!user) return null;
+
+  const currentCountryData = COUNTRY_LOCATION_DATA[country] || COUNTRY_LOCATION_DATA['India'];
+  const availableStates = Object.keys(currentCountryData.states);
+  const availableCities: string[] = currentCountryData.states[state] || [city];
 
   return (
     <div className="min-h-[85vh] bg-brand-linen py-12 px-4 sm:px-8">
@@ -271,7 +305,7 @@ export const ProfilePage: React.FC = () => {
 
             {addressSaved && (
               <div className="p-3 bg-emerald-100 text-emerald-800 text-xs font-semibold uppercase tracking-wider border border-emerald-300">
-                ✓ Address updated successfully!
+                ✓ Address details updated successfully!
               </div>
             )}
 
@@ -288,54 +322,78 @@ export const ProfilePage: React.FC = () => {
                 />
               </div>
 
+              {/* Country and PIN Code */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-1">
-                    City / Region
+                    Country *
                   </label>
-                  <input
-                    type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut rounded-none"
-                  />
+                  <select
+                    value={country}
+                    onChange={(e) => handleCountryChange(e.target.value)}
+                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none cursor-pointer rounded-none"
+                  >
+                    {COUNTRIES_LIST.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-1">
-                    State
+                    PIN Code *
                   </label>
                   <input
                     type="text"
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut rounded-none"
+                    value={pinCode}
+                    onChange={(e) => handlePinCodeChange(e.target.value)}
+                    placeholder={currentCountryData.pinPlaceholder}
+                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-mono text-brand-walnut focus:outline-none focus:border-brand-walnut rounded-none"
                   />
                 </div>
               </div>
 
+              {/* State and City Selectors */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-1">
-                    Pincode / Postal Code
+                    State / Region *
                   </label>
-                  <input
-                    type="text"
-                    value={zipCode}
-                    onChange={(e) => setZipCode(e.target.value)}
-                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut rounded-none"
-                  />
+                  <select
+                    value={state}
+                    onChange={(e) => handleStateChange(e.target.value)}
+                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none cursor-pointer rounded-none"
+                  >
+                    {availableStates.map((st) => (
+                      <option key={st} value={st}>{st}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-1">
-                    Phone Number
+                    City / Town *
                   </label>
-                  <input
-                    type="text"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut rounded-none"
-                  />
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none cursor-pointer rounded-none"
+                  >
+                    {availableCities.map((ct: string) => (
+                      <option key={ct} value={ct}>{ct}</option>
+                    ))}
+                  </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut rounded-none"
+                />
               </div>
 
               <Button type="submit" variant="primary" className="py-3 px-8 bg-[#3D2E26] text-white">

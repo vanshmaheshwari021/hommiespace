@@ -4,6 +4,7 @@ import { useCartStore } from '../store/cart.js';
 import { useAuthStore } from '../store/auth.js';
 import { Button, Card } from '@hommiespace/ui';
 import API from '../api/index.js';
+import { COUNTRIES_LIST, COUNTRY_LOCATION_DATA, lookupPinCode } from '../utils/location.js';
 
 export const Checkout: React.FC = () => {
   const { items, clearCart } = useCartStore();
@@ -12,14 +13,13 @@ export const Checkout: React.FC = () => {
 
   const [shippingAddress, setShippingAddress] = useState({
     street: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'United States'
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    pinCode: '400001',
+    country: 'India'
   });
 
   const billingSameAsShipping = true;
-  const billingAddress = shippingAddress;
 
   const [couponCode, setCouponCode] = useState('');
   const [couponError, setCouponError] = useState<string | null>(null);
@@ -48,6 +48,46 @@ export const Checkout: React.FC = () => {
     };
     loadRates();
   }, []);
+
+  // Country Change Handler
+  const handleCountryChange = (newCountry: string) => {
+    const countryData = COUNTRY_LOCATION_DATA[newCountry] || COUNTRY_LOCATION_DATA['India'];
+    const availableStates = Object.keys(countryData.states);
+    const firstState = availableStates[0] || '';
+    const firstCity = countryData.states[firstState]?.[0] || '';
+
+    setShippingAddress({
+      ...shippingAddress,
+      country: newCountry,
+      state: firstState,
+      city: firstCity
+    });
+  };
+
+  // State Change Handler
+  const handleStateChange = (stateVal: string) => {
+    const countryData = COUNTRY_LOCATION_DATA[shippingAddress.country] || COUNTRY_LOCATION_DATA['India'];
+    const availableCities = countryData.states[stateVal] || [];
+    const firstCity = availableCities[0] || '';
+
+    setShippingAddress({
+      ...shippingAddress,
+      state: stateVal,
+      city: firstCity
+    });
+  };
+
+  // PIN Code Auto Lookup Effect
+  const handlePinCodeChange = (pin: string) => {
+    const updated = { ...shippingAddress, pinCode: pin };
+    const match = lookupPinCode(pin);
+    if (match) {
+      updated.country = match.country;
+      updated.state = match.state;
+      updated.city = match.city;
+    }
+    setShippingAddress(updated);
+  };
 
   const subtotal = items.reduce((acc, item) => {
     const variant = item.product.colorVariants.find(v => v.name === item.variantName);
@@ -89,8 +129,8 @@ export const Checkout: React.FC = () => {
       return;
     }
 
-    if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zipCode) {
-      alert('Please fill in shipping address fields.');
+    if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.pinCode) {
+      alert('Please fill in all shipping address fields including PIN Code.');
       return;
     }
 
@@ -102,11 +142,19 @@ export const Checkout: React.FC = () => {
         qty: item.qty
       }));
 
-      const finalBilling = billingSameAsShipping ? shippingAddress : billingAddress;
+      const payloadAddress = {
+        street: shippingAddress.street,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        zipCode: shippingAddress.pinCode,
+        country: shippingAddress.country
+      };
+
+      const finalBilling = billingSameAsShipping ? payloadAddress : payloadAddress;
 
       const response = await API.post('/orders', {
         items: orderItems,
-        shippingAddress,
+        shippingAddress: payloadAddress,
         billingAddress: finalBilling,
         paymentMethod,
         couponCode: activeCoupon
@@ -155,7 +203,7 @@ export const Checkout: React.FC = () => {
             {placedOrder.discount > 0 && (
               <div className="flex justify-between text-brand-terracotta">
                 <span>Discount applied:</span>
-                <span>-${placedOrder.discount?.toLocaleString()}</span>
+                <span>-₹{placedOrder.discount?.toLocaleString()}</span>
               </div>
             )}
             <div className="flex justify-between">
@@ -174,8 +222,9 @@ export const Checkout: React.FC = () => {
 
           <div className="text-xs font-sans text-brand-clay mt-4 space-y-1">
             <p className="font-semibold text-brand-walnut">Shipping To:</p>
-            <p>{placedOrder.shippingAddress.street}</p>
-            <p>{placedOrder.shippingAddress.city}, {placedOrder.shippingAddress.state} {placedOrder.shippingAddress.zipCode}</p>
+            <p>{placedOrder.shippingAddress?.street}</p>
+            <p>{placedOrder.shippingAddress?.city}, {placedOrder.shippingAddress?.state} PIN: {placedOrder.shippingAddress?.zipCode}</p>
+            <p className="font-semibold text-brand-walnut mt-1">Country: {placedOrder.shippingAddress?.country || 'India'}</p>
           </div>
         </Card>
 
@@ -186,6 +235,10 @@ export const Checkout: React.FC = () => {
       </div>
     );
   }
+
+  const currentCountryData = COUNTRY_LOCATION_DATA[shippingAddress.country] || COUNTRY_LOCATION_DATA['India'];
+  const availableStates = Object.keys(currentCountryData.states);
+  const availableCities = currentCountryData.states[shippingAddress.state] || [shippingAddress.city];
 
   return (
     <div className="bg-brand-linen-light min-h-screen py-12">
@@ -206,49 +259,68 @@ export const Checkout: React.FC = () => {
                   type="text"
                   value={shippingAddress.street}
                   onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })}
+                  placeholder="e.g. 123 Luxury Lane, Apartment 4B"
                   className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none"
                 />
               </div>
 
+              {/* Country and PIN Code */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">City *</label>
-                  <input
-                    type="text"
-                    value={shippingAddress.city}
-                    onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none"
-                  />
+                  <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">Country *</label>
+                  <select
+                    value={shippingAddress.country}
+                    onChange={(e) => handleCountryChange(e.target.value)}
+                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none cursor-pointer"
+                  >
+                    {COUNTRIES_LIST.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">State *</label>
+                  <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">PIN Code *</label>
                   <input
                     type="text"
-                    value={shippingAddress.state}
-                    onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
-                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none"
+                    value={shippingAddress.pinCode}
+                    onChange={(e) => handlePinCodeChange(e.target.value)}
+                    placeholder={currentCountryData.pinPlaceholder}
+                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-mono text-brand-walnut focus:outline-none focus:border-brand-walnut"
                   />
                 </div>
               </div>
 
+              {/* State and City Selectors Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">Zip Code *</label>
-                  <input
-                    type="text"
-                    value={shippingAddress.zipCode}
-                    onChange={(e) => setShippingAddress({ ...shippingAddress, zipCode: e.target.value })}
-                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none"
-                  />
+                  <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">State / Region *</label>
+                  <select
+                    value={shippingAddress.state}
+                    onChange={(e) => handleStateChange(e.target.value)}
+                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none cursor-pointer"
+                  >
+                    {availableStates.map((st) => (
+                      <option key={st} value={st}>
+                        {st}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">Country</label>
-                  <input
-                    type="text"
-                    value={shippingAddress.country}
-                    disabled
-                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none disabled:opacity-50"
-                  />
+                  <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">City *</label>
+                  <select
+                    value={shippingAddress.city}
+                    onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
+                    className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none cursor-pointer"
+                  >
+                    {availableCities.map((ct) => (
+                      <option key={ct} value={ct}>
+                        {ct}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
@@ -265,7 +337,7 @@ export const Checkout: React.FC = () => {
                       : 'border-brand-sand-dark/35 bg-white text-brand-clay'
                   }`}
                 >
-                  <p className="text-xs uppercase tracking-wider">Credit Card</p>
+                  <p className="text-xs uppercase tracking-wider">Credit / Debit Card</p>
                   <p className="text-[10px] mt-1 opacity-85">Instant secure authorization</p>
                 </button>
 
@@ -331,7 +403,7 @@ export const Checkout: React.FC = () => {
               {discountAmount > 0 && (
                 <div className="flex justify-between text-brand-terracotta">
                   <span>Discount:</span>
-                  <span>-${discountAmount.toLocaleString()}</span>
+                  <span>-₹{discountAmount.toLocaleString()}</span>
                 </div>
               )}
               <div className="flex justify-between">
