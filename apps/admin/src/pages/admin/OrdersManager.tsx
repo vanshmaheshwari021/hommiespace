@@ -79,6 +79,12 @@ export const OrdersManager: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>(mockOrdersList);
   const [loading, setLoading] = useState(true);
 
+  // Search & Filter Controls
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+
   const fetchOrders = async () => {
     setLoading(true);
     let liveOrders: Order[] = [];
@@ -137,6 +143,45 @@ export const OrdersManager: React.FC = () => {
     );
   };
 
+  // Live Filter & Search Logic
+  const filteredOrders = orders
+    .filter((order) => {
+      const oId = order.id || order._id || '';
+      const displayId = String(oId).slice(-8).toUpperCase();
+      const userObj = typeof order.userId === 'object' ? order.userId : null;
+      const resolvedName = order.customerName || userObj?.name || (userObj?.email ? userObj.email.split('@')[0] : null) || '';
+      const productsText = (order.items || []).map(i => i.product?.name || '').join(' ');
+
+      const searchLower = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !searchLower ||
+        displayId.toLowerCase().includes(searchLower) ||
+        resolvedName.toLowerCase().includes(searchLower) ||
+        productsText.toLowerCase().includes(searchLower);
+
+      const currentOrderStatus = order.orderStatus || order.status || 'pending';
+      const matchesStatus = statusFilter === 'all' || currentOrderStatus === statusFilter;
+
+      const currentPaymentStatus = order.paymentStatus || 'paid';
+      const matchesPayment = paymentFilter === 'all' || currentPaymentStatus === paymentFilter;
+
+      return matchesSearch && matchesStatus && matchesPayment;
+    })
+    .sort((a, b) => {
+      const totalA = a.totalPrice || a.totalAmount || a.total || 0;
+      const totalB = b.totalPrice || b.totalAmount || b.total || 0;
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+
+      if (sortBy === 'newest') return dateB - dateA;
+      if (sortBy === 'oldest') return dateA - dateB;
+      if (sortBy === 'highest') return totalB - totalA;
+      if (sortBy === 'lowest') return totalA - totalB;
+      return 0;
+    });
+
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.totalPrice || o.totalAmount || o.total || 0), 0);
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -153,12 +198,116 @@ export const OrdersManager: React.FC = () => {
         <p className="text-brand-clay text-sm font-sans">Moderate customer orders, purchased products, shipping lifecycles, and payments.</p>
       </div>
 
+      {/* Metric Quick Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <Card className="p-4 bg-white border border-brand-sand-dark/20 text-left" hoverEffect={false}>
+          <span className="text-[10px] uppercase tracking-widest font-semibold text-brand-clay">Total Recorded Orders</span>
+          <p className="font-serif text-2xl font-bold text-brand-walnut mt-1">{orders.length}</p>
+        </Card>
+        <Card className="p-4 bg-white border border-brand-sand-dark/20 text-left" hoverEffect={false}>
+          <span className="text-[10px] uppercase tracking-widest font-semibold text-brand-clay">Active Processing / Shipped</span>
+          <p className="font-serif text-2xl font-bold text-amber-700 mt-1">
+            {orders.filter(o => (o.orderStatus || o.status) === 'processing' || (o.orderStatus || o.status) === 'shipped').length}
+          </p>
+        </Card>
+        <Card className="p-4 bg-white border border-brand-sand-dark/20 text-left" hoverEffect={false}>
+          <span className="text-[10px] uppercase tracking-widest font-semibold text-brand-clay">Delivered Orders</span>
+          <p className="font-serif text-2xl font-bold text-emerald-700 mt-1">
+            {orders.filter(o => (o.orderStatus || o.status) === 'delivered').length}
+          </p>
+        </Card>
+        <Card className="p-4 bg-white border border-brand-sand-dark/20 text-left" hoverEffect={false}>
+          <span className="text-[10px] uppercase tracking-widest font-semibold text-brand-clay">Gross Marketplace Value</span>
+          <p className="font-serif text-2xl font-bold text-brand-terracotta mt-1">₹{totalRevenue.toLocaleString()}</p>
+        </Card>
+      </div>
+
+      {/* Live Interactive Search & Filter Controls Toolbar */}
+      <Card className="p-4 bg-white border border-brand-sand-dark/20 space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between gap-4" hoverEffect={false}>
+        {/* Live Search Input */}
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by Customer Name, Order ID, or Product Name..."
+            className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-2.5 pl-9 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut rounded-none"
+          />
+          <svg className="w-4 h-4 text-brand-clay absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+
+        {/* Filter Selectors Group */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-brand-linen-light border border-brand-sand-dark/35 px-3 py-2 text-xs font-sans text-brand-walnut focus:outline-none cursor-pointer rounded-none"
+            >
+              <option value="all">All Shipment Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div>
+            <select
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value)}
+              className="bg-brand-linen-light border border-brand-sand-dark/35 px-3 py-2 text-xs font-sans text-brand-walnut focus:outline-none cursor-pointer rounded-none"
+            >
+              <option value="all">All Payment Statuses</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+              <option value="refunded">Refunded</option>
+            </select>
+          </div>
+
+          <div>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-brand-linen-light border border-brand-sand-dark/35 px-3 py-2 text-xs font-sans text-brand-walnut focus:outline-none cursor-pointer rounded-none"
+            >
+              <option value="newest">Sort: Newest First</option>
+              <option value="oldest">Sort: Oldest First</option>
+              <option value="highest">Sort: Highest Amount</option>
+              <option value="lowest">Sort: Lowest Amount</option>
+            </select>
+          </div>
+
+          {(searchQuery || statusFilter !== 'all' || paymentFilter !== 'all' || sortBy !== 'newest') && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+                setPaymentFilter('all');
+                setSortBy('newest');
+              }}
+              className="text-[10px] uppercase font-mono tracking-wider font-bold text-brand-terracotta hover:underline px-2 py-1"
+            >
+              Reset Filters
+            </button>
+          )}
+        </div>
+      </Card>
+
       <Card className="p-6 bg-white border border-brand-sand-dark/20" hoverEffect={false}>
-        {orders.length === 0 ? (
-          <div className="p-8 text-center text-brand-clay text-xs font-sans">No orders recorded on the platform yet.</div>
+        {filteredOrders.length === 0 ? (
+          <div className="p-12 text-center text-brand-clay text-xs font-sans space-y-2">
+            <div className="text-2xl">🔍</div>
+            <p className="font-bold text-brand-walnut">No matching orders found</p>
+            <p>Try resetting search query or status filters.</p>
+          </div>
         ) : (
           <Table headers={['Order ID', 'Customer Name', 'Purchased Products', 'Payment Method & Status', 'Shipment Status', 'Grand Total', 'Action Steps']}>
-            {orders.map((order, idx) => {
+            {filteredOrders.map((order, idx) => {
               const oId = order.id || order._id || `ORD-LIVE-00${idx + 1}`;
               const displayId = String(oId).slice(-8).toUpperCase();
               
