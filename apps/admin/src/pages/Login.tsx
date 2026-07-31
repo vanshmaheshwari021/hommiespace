@@ -12,7 +12,10 @@ export const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const doLogin = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+
     const cleanEmail = email.trim();
     const cleanPassword = password.trim();
 
@@ -63,11 +66,6 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    doLogin();
-  };
-
   return (
     <div className="min-h-screen bg-brand-linen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -91,6 +89,32 @@ export const Login: React.FC = () => {
               {error}
             </div>
           )}
+
+          {/* One-Tap Demo Login Fillers */}
+          <div className="mb-6 grid grid-cols-2 gap-2 text-left">
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin@hommiespace.com');
+                setPassword('password123');
+              }}
+              className="p-2.5 bg-brand-sand-light/60 hover:bg-brand-sand-light border border-brand-sand-dark/20 text-[10px] uppercase font-bold tracking-wider text-brand-walnut text-left cursor-pointer transition-colors"
+            >
+              <span className="block text-brand-terracotta">Demo Admin</span>
+              admin@hommiespace.com
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('nordic@hommiespace.com');
+                setPassword('password123');
+              }}
+              className="p-2.5 bg-brand-sand-light/60 hover:bg-brand-sand-light border border-brand-sand-dark/20 text-[10px] uppercase font-bold tracking-wider text-brand-walnut text-left cursor-pointer transition-colors"
+            >
+              <span className="block text-brand-terracotta">Demo Vendor</span>
+              nordic@hommiespace.com
+            </button>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             <div>
@@ -150,7 +174,6 @@ export const Login: React.FC = () => {
 
             <button
               type="submit"
-              onClick={handleSubmit}
               disabled={loading}
               className="w-full py-4 text-center mt-2 bg-brand-walnut text-brand-linen font-serif uppercase tracking-widest font-bold text-xs hover:bg-brand-charcoal transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-95 border-none"
             >
