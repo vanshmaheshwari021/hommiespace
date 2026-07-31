@@ -16,6 +16,7 @@ interface OrderItem {
 interface Order {
   id?: string;
   _id?: string;
+  userId?: any;
   customerName?: string;
   totalPrice?: number;
   totalAmount?: number;
@@ -29,6 +30,19 @@ interface Order {
 }
 
 const mockOrdersList: Order[] = [
+  { 
+    id: 'ORD-89410', 
+    customerName: 'Vansh Maheshwari (vansh@example.com)', 
+    totalPrice: 38400, 
+    paymentMethod: 'Credit Card', 
+    paymentStatus: 'paid', 
+    orderStatus: 'processing', 
+    createdAt: new Date().toISOString(),
+    items: [
+      { product: { name: 'Stockholm Velvet Armchair' }, variantName: 'Terracotta Velvet', qty: 1, price: 29500 },
+      { product: { name: 'Kobenhavn Ceramic Vase Set' }, variantName: 'Sandstone Off-White', qty: 1, price: 8900 }
+    ]
+  },
   { 
     id: 'ORD-89401', 
     customerName: 'Rohan Mehta (rohan@example.com)', 
@@ -147,7 +161,11 @@ export const OrdersManager: React.FC = () => {
             {orders.map((order, idx) => {
               const oId = order.id || order._id || `ORD-LIVE-00${idx + 1}`;
               const displayId = String(oId).slice(-8).toUpperCase();
-              const custName = order.customerName || 'Customer Account';
+              
+              // Resolve Customer Display Name cleanly
+              const userObj = typeof order.userId === 'object' ? order.userId : null;
+              const resolvedName = order.customerName || userObj?.name || (userObj?.email ? userObj.email.split('@')[0] : null) || 'Vansh Maheshwari (vansh@example.com)';
+
               const currentOrderStatus = order.orderStatus || order.status || 'pending';
               const currentPaymentStatus = order.paymentStatus || 'paid';
               const totalVal = order.totalPrice || order.totalAmount || order.total || 0;
@@ -155,7 +173,7 @@ export const OrdersManager: React.FC = () => {
               return (
                 <tr key={`${String(oId)}-${idx}`} className="hover:bg-brand-sand-light/35 text-xs text-brand-walnut border-b border-brand-sand-dark/10">
                   <td className="p-4 font-mono font-bold text-brand-terracotta">#{displayId}</td>
-                  <td className="p-4 font-bold">{custName}</td>
+                  <td className="p-4 font-bold">{resolvedName}</td>
                   <td className="p-4 space-y-1">
                     {order.items && order.items.length > 0 ? (
                       order.items.map((item, itemIdx) => (

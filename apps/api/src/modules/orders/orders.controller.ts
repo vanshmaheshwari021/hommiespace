@@ -25,7 +25,8 @@ export const getOrders = async (req: AuthRequest, res: Response, next: NextFunct
 
     const orders = await OrderModel.find(filter)
       .sort({ createdAt: -1 })
-      .populate('items.product', 'name images');
+      .populate('userId', 'name email')
+      .populate('items.product', 'name images price');
 
     res.status(200).json({ status: 'success', data: orders });
   } catch (error) {
@@ -36,7 +37,8 @@ export const getOrders = async (req: AuthRequest, res: Response, next: NextFunct
 export const getOrderById = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const order = await OrderModel.findById(req.params.id)
-      .populate('items.product', 'name images material')
+      .populate('userId', 'name email')
+      .populate('items.product', 'name images material price')
       .populate('items.vendorId', 'businessName');
 
     if (!order) {
@@ -130,9 +132,11 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
       country: 'India'
     };
 
+    const customerDisplayName = req.user.name || (req.user.email ? req.user.email.split('@')[0] : 'Vansh Maheshwari');
+
     const order = new OrderModel({
       userId: req.user.id,
-      customerName: req.user.name || 'Customer User',
+      customerName: customerDisplayName,
       items: orderItems,
       totalPrice: total,
       discountAmount: discount,
@@ -145,6 +149,8 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
     });
 
     await order.save();
+    await order.populate('userId', 'name email');
+    await order.populate('items.product', 'name images price');
 
     res.status(201).json({ status: 'success', data: order });
   } catch (error) {
