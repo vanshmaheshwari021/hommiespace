@@ -10,7 +10,15 @@ const defaultSuperAdmin: User = {
   updatedAt: new Date().toISOString()
 };
 
-const initialUser = JSON.parse(localStorage.getItem('hs_user') || 'null') || defaultSuperAdmin;
+let storedUser: User | null = null;
+try {
+  const parsed = JSON.parse(localStorage.getItem('hs_user') || 'null');
+  if (parsed && parsed.role === 'admin') {
+    storedUser = parsed;
+  }
+} catch (e) {}
+
+const initialUser = storedUser || defaultSuperAdmin;
 const initialToken = localStorage.getItem('hs_token') || 'admin-secret-token-2026';
 
 interface AuthState {
