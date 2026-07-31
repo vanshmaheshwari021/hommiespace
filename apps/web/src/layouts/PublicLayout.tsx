@@ -147,19 +147,32 @@ export const PublicLayout: React.FC = () => {
             {/* User Account / Login State */}
             {user ? (
               <div className="flex items-center gap-3">
-                <Link to="/orders" className="text-xs font-semibold text-brand-walnut dark:text-brand-linen hover:text-brand-terracotta transition-colors hidden sm:block">
-                  Orders ({user.name.split(' ')[0]})
+                <Link 
+                  to="/orders" 
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-sand-light dark:bg-brand-walnut/90 border border-brand-sand-dark/40 rounded-full text-xs font-serif font-bold text-brand-walnut dark:text-brand-linen hover:text-brand-terracotta transition-all shadow-sm"
+                >
+                  <svg className="w-4 h-4 text-brand-terracotta" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                  <span>Orders ({user.name.split(' ')[0]})</span>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={() => logout()} className="text-[10px]">
+                <Button variant="ghost" size="sm" onClick={() => logout()} className="text-[10px] uppercase font-mono tracking-wider">
                   Log Out
                 </Button>
               </div>
             ) : (
-              <Link to="/login">
-                <Button variant="outline" size="sm">
-                  Sign In
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link to="/login">
+                  <Button variant="outline" size="sm" className="text-xs uppercase font-serif tracking-wider">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="primary" size="sm" className="bg-[#3D2E26] text-white hover:bg-[#BC6C58] text-xs uppercase font-serif tracking-wider shadow-sm">
+                    Register
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         </header>

@@ -1,14 +1,15 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import PublicLayout from './layouts/PublicLayout';
-import Home from './pages/Home';
-import ProductListing from './pages/ProductListing';
-import ProductDetail from './pages/ProductDetail';
-import VendorShowroom from './pages/VendorShowroom';
-import Checkout from './pages/Checkout';
-import OrdersList from './pages/OrdersList';
-import SupportTickets from './pages/SupportTickets';
-import Login from './pages/Login';
+import PublicLayout from './layouts/PublicLayout.js';
+import Home from './pages/Home.js';
+import ProductListing from './pages/ProductListing.js';
+import ProductDetail from './pages/ProductDetail.js';
+import VendorShowroom from './pages/VendorShowroom.js';
+import Checkout from './pages/Checkout.js';
+import OrdersList from './pages/OrdersList.js';
+import SupportTickets from './pages/SupportTickets.js';
+import Login from './pages/Login.js';
+import Register from './pages/Register.js';
 
 const queryClient = new QueryClient();
 
@@ -23,9 +24,12 @@ function App() {
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/vendors/:id" element={<VendorShowroom />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/orders" element={<OrdersList />} />
+            <Route path="/profile" element={<OrdersList />} />
             <Route path="/profile/orders" element={<OrdersList />} />
             <Route path="/profile/tickets" element={<SupportTickets />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
           </Route>
 
           {/* Fallbacks */}
