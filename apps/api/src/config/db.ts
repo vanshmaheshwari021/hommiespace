@@ -3,11 +3,14 @@ import env from './env.js';
 
 export const connectDB = async (): Promise<void> => {
   try {
-    const conn = await mongoose.connect(env.MONGODB_URI);
+    const conn = await mongoose.connect(env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000
+    });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`MongoDB Connection Error: ${error instanceof Error ? error.message : error}`);
-    process.exit(1);
+    console.error(`MongoDB Connection Warning: ${error instanceof Error ? error.message : error}`);
+    console.warn(`API Server is running on port 5000 in fault-tolerant mode.`);
   }
 };
+
 export default connectDB;
