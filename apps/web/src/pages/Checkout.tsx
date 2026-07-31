@@ -160,7 +160,14 @@ export const Checkout: React.FC = () => {
         couponCode: activeCoupon
       });
 
-      setPlacedOrder(response.data.data);
+      const newOrder = response.data.data;
+      setPlacedOrder(newOrder);
+
+      try {
+        const existing = JSON.parse(localStorage.getItem('hs_placed_orders') || '[]');
+        localStorage.setItem('hs_placed_orders', JSON.stringify([newOrder, ...existing]));
+      } catch (e) {}
+
       clearCart();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Checkout failed.');
