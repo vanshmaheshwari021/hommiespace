@@ -14,6 +14,13 @@ export const Login: React.FC = () => {
   const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
   const setAuth = useAuthStore((state) => state.setAuth);
 
+  // Force clean blank state on mount/reload to prevent browser password autofill
+  useEffect(() => {
+    setEmail('');
+    setPassword('');
+    setError(null);
+  }, []);
+
   // Lockout Countdown Timer Effect
   useEffect(() => {
     if (lockoutSeconds <= 0) return;
@@ -146,14 +153,15 @@ export const Login: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6 text-left relative z-20">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-6 text-left relative z-20">
             <div>
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Super Admin Email
               </label>
               <input
                 type="email"
-                name="email"
+                name="admin_email_no_autofill"
+                autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -170,7 +178,8 @@ export const Login: React.FC = () => {
               <div className="relative z-30">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  name="password"
+                  name="admin_pass_no_autofill"
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
