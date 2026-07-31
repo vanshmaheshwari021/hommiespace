@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import API from '../api/index.js';
 
 export const Register: React.FC = () => {
+  const [role, setRole] = useState<'customer' | 'vendor'>('customer');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,22 +52,30 @@ export const Register: React.FC = () => {
         name: cleanName,
         email: cleanEmail,
         password: cleanPassword,
-        role: 'customer'
+        role
       });
 
-      setSuccess('🎉 Registration Successful! Redirecting you to Sign In...');
+      setSuccess(`🎉 ${role === 'vendor' ? 'Vendor Studio' : 'Customer'} Registration Successful! Redirecting you to Sign In...`);
       setTimeout(() => {
-        navigate(`/login?registered=true&email=${encodeURIComponent(cleanEmail)}`);
+        if (role === 'vendor') {
+          window.location.href = 'http://localhost:5180/login?registered=true';
+        } else {
+          navigate(`/login?registered=true&email=${encodeURIComponent(cleanEmail)}`);
+        }
       }, 1500);
     } catch (err: any) {
-      console.error('Customer Registration Error:', err);
+      console.error('Registration Error:', err);
       const serverMsg = err.response?.data?.message || 'Registration failed. Please check your information.';
 
       // Offline Demo Fallback
       if (!err.response) {
-        setSuccess('🎉 Registration Successful! Redirecting you to Sign In...');
+        setSuccess(`🎉 ${role === 'vendor' ? 'Vendor Studio' : 'Customer'} Registration Successful! Redirecting...`);
         setTimeout(() => {
-          navigate(`/login?registered=true&email=${encodeURIComponent(cleanEmail)}`);
+          if (role === 'vendor') {
+            window.location.href = 'http://localhost:5180/login?registered=true';
+          } else {
+            navigate(`/login?registered=true&email=${encodeURIComponent(cleanEmail)}`);
+          }
         }, 1500);
         return;
       }
@@ -84,7 +93,7 @@ export const Register: React.FC = () => {
         <Link to="/" className="text-xs font-mono font-bold uppercase tracking-widest text-brand-walnut hover:text-brand-terracotta flex items-center gap-1.5 transition-colors">
           ← Back to Storefront
         </Link>
-        <span className="text-[10px] uppercase tracking-widest font-mono text-brand-clay font-semibold">Create Customer Account</span>
+        <span className="text-[10px] uppercase tracking-widest font-mono text-brand-clay font-semibold">Create Account</span>
       </div>
 
       <div className="w-full max-w-md mx-auto my-auto">
@@ -102,12 +111,35 @@ export const Register: React.FC = () => {
         </div>
 
         <div className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left relative z-10">
-          <h2 className="font-serif text-xl font-bold text-brand-walnut mb-2 text-center">
+          <h2 className="font-serif text-xl font-bold text-brand-walnut mb-4 text-center">
             Register Account
           </h2>
-          <p className="text-xs text-brand-clay mb-6 text-center font-sans">
-            Join HommieSpace to track orders, save curated pieces, and manage addresses.
-          </p>
+
+          {/* Role Selector Segmented Switch */}
+          <div className="grid grid-cols-2 gap-2 mb-6 p-1 bg-brand-linen-light border border-brand-sand-dark/30">
+            <button
+              type="button"
+              onClick={() => setRole('customer')}
+              className={`py-2.5 text-xs font-serif uppercase tracking-wider font-bold transition-all cursor-pointer ${
+                role === 'customer'
+                  ? 'bg-[#3D2E26] text-white shadow'
+                  : 'text-brand-clay hover:text-brand-walnut'
+              }`}
+            >
+              👤 Customer Account
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole('vendor')}
+              className={`py-2.5 text-xs font-serif uppercase tracking-wider font-bold transition-all cursor-pointer ${
+                role === 'vendor'
+                  ? 'bg-[#3D2E26] text-white shadow'
+                  : 'text-brand-clay hover:text-brand-walnut'
+              }`}
+            >
+              🏬 Vendor Studio
+            </button>
+          </div>
 
           {/* Success Banner */}
           {success && (
@@ -135,7 +167,7 @@ export const Register: React.FC = () => {
                 onChange={(e) => setName(e.target.value)}
                 required
                 className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none relative z-30"
-                placeholder="Jane Doe"
+                placeholder={role === 'customer' ? 'Jane Doe' : 'Vansh Craft Studio'}
               />
             </div>
 
@@ -150,7 +182,7 @@ export const Register: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none relative z-30"
-                placeholder="jane@example.com"
+                placeholder={role === 'customer' ? 'jane@example.com' : 'studio@example.com'}
               />
             </div>
 
@@ -243,7 +275,7 @@ export const Register: React.FC = () => {
               style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
               className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block relative z-30"
             >
-              {loading ? 'Creating Account...' : success ? 'Registration Successful! Redirecting...' : 'Register & Track Orders →'}
+              {loading ? 'Creating Account...' : success ? 'Registration Successful! Redirecting...' : `Register as ${role === 'vendor' ? 'Vendor Studio' : 'Customer'} →`}
             </button>
           </form>
           
@@ -253,12 +285,6 @@ export const Register: React.FC = () => {
               <Link to="/login" className="text-brand-terracotta font-semibold hover:underline">
                 Sign in here
               </Link>
-            </div>
-            <div className="pt-2 border-t border-brand-sand-dark/15 text-[11px]">
-              <span>Want to sell items as a partner studio? </span>
-              <a href="http://localhost:5180/register" target="_blank" rel="noopener noreferrer" className="text-brand-walnut font-bold hover:underline">
-                Register Studio →
-              </a>
             </div>
           </div>
         </div>

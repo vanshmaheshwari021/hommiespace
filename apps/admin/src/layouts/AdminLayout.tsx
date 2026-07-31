@@ -1,16 +1,15 @@
 import React from 'react';
-import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.js';
 import { Button } from '@hommiespace/ui';
 
 export const AdminLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    window.location.href = '/login';
   };
 
   const adminLinks = [
@@ -38,7 +37,7 @@ export const AdminLayout: React.FC = () => {
         </div>
         <div className="flex items-center gap-4 text-xs font-semibold">
           <span className="text-brand-sand hidden sm:inline">Logged in: {user?.name}</span>
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-brand-linen hover:bg-brand-charcoal/50 text-[10px]">
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-brand-linen hover:bg-brand-charcoal/50 text-[10px] cursor-pointer">
             Sign Out
           </Button>
         </div>
