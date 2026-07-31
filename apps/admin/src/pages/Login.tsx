@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
@@ -10,11 +10,31 @@ export const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Login Attempt Guard State (3 Attempts Max)
+  const [attemptsLeft, setAttemptsLeft] = useState<number>(3);
+  const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
   const setAuth = useAuthStore((state) => state.setAuth);
+
+  // Lockout Countdown Timer Effect
+  useEffect(() => {
+    if (lockoutSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setLockoutSeconds((prev) => {
+        if (prev <= 1) {
+          setAttemptsLeft(3); // Reset attempts after countdown finishes
+          setError(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutSeconds]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return;
+    if (loading || lockoutSeconds > 0) return;
 
     const cleanEmail = email.trim();
     const cleanPassword = password.trim();
@@ -27,21 +47,40 @@ export const Login: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    // Instant Super Admin Fast-Track:
-    if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
-      const adminUser = {
-        id: 'super-admin-01',
-        name: 'Super Administrator',
-        email: 'admin@hommiespace.com',
-        role: 'admin',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setAuth(adminUser as any, 'admin-secret-token-2026', null);
-      window.location.href = '/admin/dashboard';
-      return;
+    // Super Admin Credentials Validation: admin@hommiespace.com / password123
+    const isSuperAdminEmail = cleanEmail.toLowerCase() === 'admin@hommiespace.com';
+    const isSuperAdminPass = cleanPassword === 'password123';
+
+    if (isSuperAdminEmail) {
+      if (isSuperAdminPass) {
+        setAttemptsLeft(3);
+        const adminUser = {
+          id: 'super-admin-01',
+          name: 'Super Administrator',
+          email: 'admin@hommiespace.com',
+          role: 'admin',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        setAuth(adminUser as any, 'admin-secret-token-2026', null);
+        window.location.href = '/admin/dashboard';
+        return;
+      } else {
+        // Failed attempt handling for Admin
+        const newAttempts = attemptsLeft - 1;
+        setAttemptsLeft(newAttempts);
+        setLoading(false);
+        if (newAttempts <= 0) {
+          setLockoutSeconds(60);
+          setError('🔒 Too many failed attempts! Security Lockout active. Please wait 60 seconds.');
+        } else {
+          setError(`⚠️ Invalid Admin Password! ${newAttempts} attempt${newAttempts === 1 ? '' : 's'} remaining.`);
+        }
+        return;
+      }
     }
 
+    // Backend Authentication for Vendor / Partner Accounts
     try {
       const response = await API.post('/auth/login', {
         email: cleanEmail,
@@ -63,6 +102,7 @@ export const Login: React.FC = () => {
       }
 
       setAuth(user, token, vendor);
+      setAttemptsLeft(3); // Reset attempts on successful login
 
       // Role-Based Navigation
       if (user.role === 'admin') {
@@ -76,8 +116,17 @@ export const Login: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Login Error:', err);
-      const msg = err.response?.data?.message || 'User not available / Invalid email or password.';
-      setError(msg);
+      const newAttempts = attemptsLeft - 1;
+      setAttemptsLeft(newAttempts);
+
+      if (newAttempts <= 0) {
+        setLockoutSeconds(60);
+        setError('🔒 Too many failed login attempts! Account locked for 60 seconds.');
+      } else {
+        setError(
+          `⚠️ Invalid credentials! ${newAttempts} attempt${newAttempts === 1 ? '' : 's'} remaining before lockout.`
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -92,25 +141,40 @@ export const Login: React.FC = () => {
             HOMMIE<span className="text-brand-terracotta">SPACE</span>
           </h1>
           <p className="text-brand-clay text-xs uppercase tracking-widest font-semibold">
-            Partner & Admin Portal
+            Partner & Admin Gateway Portal · Port 5174
           </p>
         </div>
 
         <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl" hoverEffect={false}>
-          <h2 className="font-serif text-xl font-bold text-brand-walnut mb-6 text-center">
-            Sign In to Dashboard
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-serif text-xl font-bold text-brand-walnut">
+              Sign In to Dashboard
+            </h2>
 
-          {/* User Not Available Error Banner with Register Link */}
+            {/* Login Attempts Badge */}
+            <span className={`px-2.5 py-1 text-[10px] uppercase font-mono font-bold tracking-wider border rounded-full ${
+              lockoutSeconds > 0
+                ? 'bg-red-100 text-red-800 border-red-300 animate-pulse'
+                : attemptsLeft === 3
+                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                : 'bg-amber-100 text-amber-800 border-amber-300'
+            }`}>
+              {lockoutSeconds > 0 ? `Locked (${lockoutSeconds}s)` : `${attemptsLeft} Attempt${attemptsLeft === 1 ? '' : 's'} Left`}
+            </span>
+          </div>
+
+          {/* Error & Attempts Banner */}
           {error && (
             <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30 text-left space-y-2">
-              <div>⚠️ {error}</div>
-              <div className="pt-2 border-t border-brand-terracotta/20 flex justify-between items-center text-[10px]">
-                <span>Need an account?</span>
-                <Link to="/register" className="underline font-bold hover:text-brand-walnut uppercase">
-                  Register Studio Account →
-                </Link>
-              </div>
+              <div>{error}</div>
+              {attemptsLeft < 3 && lockoutSeconds === 0 && (
+                <div className="pt-2 border-t border-brand-terracotta/20 flex justify-between items-center text-[10px]">
+                  <span>Need help signing in?</span>
+                  <Link to="/register" className="underline font-bold hover:text-brand-walnut uppercase">
+                    Register Studio Account →
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 
@@ -125,8 +189,9 @@ export const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
-                placeholder="you@hommiespace.com"
+                disabled={lockoutSeconds > 0}
+                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="admin@hommiespace.com"
               />
             </div>
 
@@ -141,7 +206,8 @@ export const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 pr-20 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
+                  disabled={lockoutSeconds > 0}
+                  className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 pr-20 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="••••••••"
                 />
                 <button
@@ -171,14 +237,14 @@ export const Login: React.FC = () => {
               </div>
             </div>
 
-            {/* Prominent High-Contrast Native Submit Button */}
+            {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
-              style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
+              disabled={loading || lockoutSeconds > 0}
+              style={{ backgroundColor: lockoutSeconds > 0 ? '#6B7280' : '#3D2E26', color: '#FAF8F5' }}
               className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
             >
-              {loading ? 'Authenticating...' : 'Sign In to Dashboard →'}
+              {lockoutSeconds > 0 ? `Locked (${lockoutSeconds}s)` : loading ? 'Authenticating...' : 'Sign In to Dashboard →'}
             </button>
           </form>
 
