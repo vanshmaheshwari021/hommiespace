@@ -1,20 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/auth.js';
+import API from '../api/index.js';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Login Attempt Guard State (3 Attempts Max)
+  const [attemptsLeft, setAttemptsLeft] = useState<number>(3);
+  const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
   const setAuth = useAuthStore((state) => state.setAuth);
 
+  // Lockout Countdown Timer Effect
   useEffect(() => {
-    console.log("🔥 Login component mounted cleanly!");
-  }, []);
+    if (lockoutSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setLockoutSeconds((prev) => {
+        if (prev <= 1) {
+          setAttemptsLeft(3);
+          setError(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutSeconds]);
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    console.log("🔥 handleSubmit called!");
+    if (loading || lockoutSeconds > 0) return;
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
@@ -24,17 +42,65 @@ export const Login: React.FC = () => {
       return;
     }
 
-    const adminUser = {
-      id: 'super-admin-01',
-      name: 'Super Administrator',
-      email: cleanEmail || 'admin@hommiespace.com',
-      role: 'admin' as const,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+    setLoading(true);
+    setError(null);
 
-    setAuth(adminUser as any, 'admin-secret-token-2026', null);
-    window.location.href = '/admin/dashboard';
+    const isSuperAdminEmail = cleanEmail === 'admin@hommiespace.com';
+
+    // 1. Fast-Track Authentication ONLY for exact Super Admin credentials
+    if (isSuperAdminEmail && cleanPassword === 'password123') {
+      setAttemptsLeft(3);
+      const adminUser = {
+        id: 'super-admin-01',
+        name: 'Super Administrator',
+        email: 'admin@hommiespace.com',
+        role: 'admin' as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      setAuth(adminUser as any, 'admin-secret-token-2026', null);
+      setLoading(false);
+      window.location.href = '/admin/dashboard';
+      return;
+    }
+
+    // 2. Backend Database API Authentication
+    try {
+      const response = await API.post('/auth/login', {
+        email: cleanEmail,
+        password: cleanPassword
+      });
+
+      const { user, token } = response.data.data;
+
+      if (user.role !== 'admin' && cleanEmail !== 'admin@hommiespace.com') {
+        setError('Forbidden: Only Super Administrators can access this portal.');
+        setLoading(false);
+        return;
+      }
+
+      setAuth(user, token, null);
+      setAttemptsLeft(3);
+      setLoading(false);
+      window.location.href = '/admin/dashboard';
+    } catch (err: any) {
+      console.error('Super Admin Login Error:', err);
+
+      // Decrement remaining attempts on wrong password
+      const newAttempts = attemptsLeft - 1;
+      setAttemptsLeft(newAttempts);
+
+      if (newAttempts <= 0) {
+        setLockoutSeconds(60);
+        setError('🔒 Too many failed login attempts. Portal locked for 60 seconds.');
+      } else {
+        const serverMsg = err.response?.data?.message || 'Invalid Super Admin email or password.';
+        setError(`⚠️ ${serverMsg} (${newAttempts} attempt${newAttempts === 1 ? '' : 's'} remaining)`);
+      }
+
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,7 +116,6 @@ export const Login: React.FC = () => {
           </p>
         </div>
 
-        {/* Clean Standard Card Container (No 3D Stacking Overlay) */}
         <div className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left relative z-10">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-brand-sand-dark/20">
             <div>
@@ -62,15 +127,22 @@ export const Login: React.FC = () => {
               </p>
             </div>
 
-            <span className="px-2.5 py-1 text-[10px] uppercase font-mono font-bold tracking-wider border rounded-full bg-emerald-100 text-emerald-800 border-emerald-300">
-              Authorized Mode
+            {/* Login Attempts Badge */}
+            <span className={`px-2.5 py-1 text-[10px] uppercase font-mono font-bold tracking-wider border rounded-full ${
+              lockoutSeconds > 0
+                ? 'bg-red-100 text-red-800 border-red-300 animate-pulse'
+                : attemptsLeft === 3
+                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                : 'bg-amber-100 text-amber-800 border-amber-300'
+            }`}>
+              {lockoutSeconds > 0 ? `Locked (${lockoutSeconds}s)` : `${attemptsLeft} Attempt${attemptsLeft === 1 ? '' : 's'} Left`}
             </span>
           </div>
 
           {/* Error Banner */}
           {error && (
             <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30">
-              ⚠️ {error}
+              {error}
             </div>
           )}
 
@@ -85,7 +157,8 @@ export const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none relative z-30"
+                disabled={lockoutSeconds > 0}
+                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed relative z-30"
                 placeholder="admin@hommiespace.com"
               />
             </div>
@@ -101,15 +174,13 @@ export const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 pr-20 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
+                  disabled={lockoutSeconds > 0}
+                  className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 pr-20 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
-                  onClick={() => {
-                    console.log("🔥 SHOW/HIDE CLICKED!");
-                    setShowPassword((prev) => !prev);
-                  }}
+                  onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-40 shadow-sm"
                   title={showPassword ? 'Hide Password' : 'Show Password'}
                 >
@@ -138,10 +209,11 @@ export const Login: React.FC = () => {
             <button
               type="button"
               onClick={() => handleSubmit()}
-              style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
-              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all cursor-pointer shadow-lg active:scale-95 border-none block relative z-30"
+              disabled={loading || lockoutSeconds > 0}
+              style={{ backgroundColor: lockoutSeconds > 0 ? '#6B7280' : '#3D2E26', color: '#FAF8F5' }}
+              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all cursor-pointer shadow-lg active:scale-95 border-none block relative z-30 disabled:opacity-50"
             >
-              Sign In to Super Admin Panel →
+              {lockoutSeconds > 0 ? `Locked (${lockoutSeconds}s)` : loading ? 'Authenticating...' : 'Sign In to Super Admin Panel →'}
             </button>
           </form>
         </div>

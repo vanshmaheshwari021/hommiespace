@@ -1,15 +1,6 @@
 import { create } from 'zustand';
 import type { User, Vendor } from '@hommiespace/shared';
 
-const defaultSuperAdmin: User = {
-  id: 'super-admin-01',
-  name: 'Super Administrator',
-  email: 'admin@hommiespace.com',
-  role: 'admin',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-};
-
 let storedUser: User | null = null;
 try {
   const parsed = JSON.parse(localStorage.getItem('hs_user') || 'null');
@@ -18,8 +9,7 @@ try {
   }
 } catch (e) {}
 
-const initialUser = storedUser || defaultSuperAdmin;
-const initialToken = localStorage.getItem('hs_token') || 'admin-secret-token-2026';
+const initialToken = localStorage.getItem('hs_token');
 
 interface AuthState {
   user: User | null;
@@ -32,10 +22,10 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: initialUser,
+  user: storedUser,
   vendor: JSON.parse(localStorage.getItem('hs_vendor') || 'null'),
   token: initialToken,
-  isAuthenticated: true,
+  isAuthenticated: !!(initialToken && storedUser),
 
   setAuth: (user, token, vendor = null) => {
     localStorage.setItem('hs_token', token);
