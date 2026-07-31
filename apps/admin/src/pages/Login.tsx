@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
 
 export const Login: React.FC = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +62,7 @@ export const Login: React.FC = () => {
       
       setAuth(adminUser as any, 'admin-secret-token-2026', null);
       setLoading(false);
-      navigate('/admin/dashboard');
+      window.location.href = '/admin/dashboard';
       return;
     }
 
@@ -86,7 +84,7 @@ export const Login: React.FC = () => {
       setAuth(user, token, null);
       setAttemptsLeft(3);
       setLoading(false);
-      navigate('/admin/dashboard');
+      window.location.href = '/admin/dashboard';
     } catch (err: any) {
       console.error('Super Admin Login Error:', err);
 

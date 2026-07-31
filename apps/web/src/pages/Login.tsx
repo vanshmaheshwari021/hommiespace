@@ -74,8 +74,8 @@ export const Login: React.FC = () => {
         // Save auth session token & user state BEFORE navigate call for customer
         setAuth(user, token);
         setLoading(false);
-        // 4. React Router Navigate to Customer Profile Page
-        navigate('/profile');
+        // 4. Hard navigate to Customer Profile Page
+        window.location.href = '/profile';
       }
     } catch (err: any) {
       console.error('Customer Login Error:', err);
