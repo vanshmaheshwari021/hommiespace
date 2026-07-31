@@ -39,39 +39,19 @@ export const Login: React.FC = () => {
     const cleanPassword = password.trim();
 
     if (!cleanEmail || !cleanPassword) {
-      setError('Please enter both email address and password.');
+      setError('Please enter both Super Admin email and password.');
       return;
     }
 
     setLoading(true);
     setError(null);
 
-    try {
-      // Backend Database Authentication API Call
-      const response = await API.post('/auth/login', {
-        email: cleanEmail,
-        password: cleanPassword
-      });
+    // Super Admin Credentials Validation
+    const isSuperAdminEmail = cleanEmail === 'admin@hommiespace.com';
+    const isSuperAdminPass = cleanPassword === 'password123';
 
-      const { user, token } = response.data.data;
-
-      if (user.role !== 'admin' && cleanEmail !== 'admin@hommiespace.com') {
-        setError('Forbidden: Only Super Administrators can access this portal.');
-        setLoading(false);
-        return;
-      }
-
-      // Successful Database Verification -> Store session & reset attempts
-      setAuth(user, token, null);
-      setAttemptsLeft(3);
-
-      // Open Admin Dashboard
-      window.location.href = '/admin/dashboard';
-    } catch (err: any) {
-      console.error('Super Admin Login API Error:', err);
-
-      // Super Admin Fallback Verification for admin@hommiespace.com / password123
-      if (cleanEmail === 'admin@hommiespace.com' && cleanPassword === 'password123') {
+    if (isSuperAdminEmail) {
+      if (isSuperAdminPass) {
         setAttemptsLeft(3);
         const adminUser = {
           id: 'super-admin-01',
@@ -84,8 +64,40 @@ export const Login: React.FC = () => {
         setAuth(adminUser as any, 'admin-secret-token-2026', null);
         window.location.href = '/admin/dashboard';
         return;
+      } else {
+        const newAttempts = attemptsLeft - 1;
+        setAttemptsLeft(newAttempts);
+        setLoading(false);
+        if (newAttempts <= 0) {
+          setLockoutSeconds(60);
+          setError('🔒 Too many failed attempts! Super Admin Portal locked for 60 seconds.');
+        } else {
+          setError(`⚠️ Invalid Admin Password! ${newAttempts} attempt${newAttempts === 1 ? '' : 's'} remaining.`);
+        }
+        return;
+      }
+    }
+
+    // Backend Database Authentication for other accounts
+    try {
+      const response = await API.post('/auth/login', {
+        email: cleanEmail,
+        password: cleanPassword
+      });
+
+      const { user, token } = response.data.data;
+
+      if (user.role !== 'admin') {
+        setError('Forbidden: Only Super Administrators can access this portal.');
+        setLoading(false);
+        return;
       }
 
+      setAuth(user, token, null);
+      setAttemptsLeft(3);
+      window.location.href = '/admin/dashboard';
+    } catch (err: any) {
+      console.error('Super Admin Login API Error:', err);
       const newAttempts = attemptsLeft - 1;
       setAttemptsLeft(newAttempts);
 
@@ -102,36 +114,36 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-brand-charcoal flex flex-col justify-between p-4 py-8 text-brand-linen">
-      <div className="w-full max-w-md mx-auto my-auto">
+    <div className="min-h-screen bg-brand-linen flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <h1 className="font-serif text-3xl font-black tracking-wider text-white mb-2">
+          <h1 className="font-serif text-3xl font-bold tracking-wider text-brand-walnut mb-2">
             HOMMIE<span className="text-brand-terracotta">SPACE</span>
           </h1>
-          <p className="text-brand-sand-dark text-[10px] uppercase tracking-widest font-mono font-semibold">
+          <p className="text-brand-clay text-xs uppercase tracking-widest font-semibold">
             Super Admin Executive Portal · Port 5180
           </p>
         </div>
 
-        <Card className="p-8 bg-[#25211E] border border-brand-terracotta/40 shadow-2xl text-left" hoverEffect={false}>
-          <div className="flex justify-between items-center mb-6 border-b border-brand-sand-dark/20 pb-4">
+        <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl text-left" hoverEffect={false}>
+          <div className="flex justify-between items-center mb-6 pb-4 border-b border-brand-sand-dark/20">
             <div>
-              <h2 className="font-serif text-xl font-bold text-white">
+              <h2 className="font-serif text-xl font-bold text-brand-walnut">
                 Super Admin Sign In
               </h2>
-              <p className="text-[10px] text-brand-sand-dark font-mono mt-0.5">
-                Authorized Personnel Only
+              <p className="text-xs text-brand-clay mt-0.5 font-sans">
+                Executive Control System
               </p>
             </div>
 
             {/* Login Attempts Badge */}
-            <span className={`px-3 py-1 text-[10px] uppercase font-mono font-bold tracking-wider border rounded-full ${
+            <span className={`px-2.5 py-1 text-[10px] uppercase font-mono font-bold tracking-wider border rounded-full ${
               lockoutSeconds > 0
-                ? 'bg-red-950 text-red-300 border-red-800 animate-pulse'
+                ? 'bg-red-100 text-red-800 border-red-300 animate-pulse'
                 : attemptsLeft === 3
-                ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                : 'bg-amber-950 text-amber-300 border-amber-800'
+                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                : 'bg-amber-100 text-amber-800 border-amber-300'
             }`}>
               {lockoutSeconds > 0 ? `Locked (${lockoutSeconds}s)` : `${attemptsLeft} Attempt${attemptsLeft === 1 ? '' : 's'} Left`}
             </span>
@@ -139,14 +151,14 @@ export const Login: React.FC = () => {
 
           {/* Error & Attempts Banner */}
           {error && (
-            <div className="mb-6 p-4 bg-brand-terracotta/20 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/50">
+            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 text-left">
             <div>
-              <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-sand-dark mb-2">
+              <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Super Admin Email
               </label>
               <input
@@ -156,13 +168,13 @@ export const Login: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={lockoutSeconds > 0}
-                className="w-full bg-brand-charcoal border border-brand-sand-dark/30 px-4 py-3 text-xs font-sans text-white focus:outline-none focus:border-brand-terracotta transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="admin@hommiespace.com"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-sand-dark mb-2">
+              <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Super Admin Password
               </label>
               <div className="relative">
@@ -173,13 +185,13 @@ export const Login: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={lockoutSeconds > 0}
-                  className="w-full bg-brand-charcoal border border-brand-sand-dark/30 px-4 py-3 pr-20 text-xs font-sans text-white focus:outline-none focus:border-brand-terracotta transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 pr-20 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-charcoal/80 hover:bg-brand-charcoal border border-brand-sand-dark/40 text-brand-sand-dark hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-20 shadow-sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-brand-sand-light/80 hover:bg-brand-sand-light border border-brand-sand-dark/30 text-brand-walnut hover:text-brand-terracotta transition-colors text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer z-20 shadow-sm"
                   title={showPassword ? 'Hide Password' : 'Show Password'}
                 >
                   {showPassword ? (
@@ -192,7 +204,7 @@ export const Login: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <svg className="w-3.5 h-3.5 text-brand-sand-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="w-3.5 h-3.5 text-brand-clay" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
@@ -203,21 +215,17 @@ export const Login: React.FC = () => {
               </div>
             </div>
 
-            {/* High-Contrast Sign In Button */}
+            {/* Prominent Native Submit Button */}
             <button
               type="submit"
               disabled={loading || lockoutSeconds > 0}
-              style={{ backgroundColor: lockoutSeconds > 0 ? '#4B5563' : '#BC6C58', color: '#FFFFFF' }}
-              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-brand-walnut transition-all disabled:opacity-50 cursor-pointer shadow-xl active:scale-95 border-none block"
+              style={{ backgroundColor: lockoutSeconds > 0 ? '#6B7280' : '#3D2E26', color: '#FAF8F5' }}
+              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
             >
-              {lockoutSeconds > 0 ? `Portal Locked (${lockoutSeconds}s)` : loading ? 'Authenticating Admin...' : 'Sign In to Super Admin Panel →'}
+              {lockoutSeconds > 0 ? `Locked (${lockoutSeconds}s)` : loading ? 'Authenticating...' : 'Sign In to Super Admin Panel →'}
             </button>
           </form>
         </Card>
-      </div>
-
-      <div className="text-[10px] text-brand-sand-dark uppercase font-mono tracking-widest text-center mt-6">
-        CONFIDENTIAL · HOMMIESPACE EXECUTIVE ADMINISTRATION PORTAL
       </div>
     </div>
   );
