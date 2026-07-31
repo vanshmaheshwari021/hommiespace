@@ -35,8 +35,6 @@ export const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🔥 ADMIN SUBMIT TRIGGERED! Email:', email, 'Password:', password);
-    alert('🔥 Login Button Clicked! Attempting redirect to /admin/dashboard...');
     if (loading || lockoutSeconds > 0) return;
 
     const cleanEmail = email.trim().toLowerCase();
@@ -52,8 +50,8 @@ export const Login: React.FC = () => {
 
     const isSuperAdminEmail = cleanEmail === 'admin@hommiespace.com';
 
-    // Synchronous Fast-Track for admin@hommiespace.com
-    if (isSuperAdminEmail && (cleanPassword === 'password123' || cleanPassword.length >= 4)) {
+    // Synchronous Fast-Track ONLY for correct Super Admin credentials
+    if (isSuperAdminEmail && cleanPassword === 'password123') {
       setAttemptsLeft(3);
       const adminUser = {
         id: 'super-admin-01',
@@ -64,7 +62,6 @@ export const Login: React.FC = () => {
         updatedAt: new Date().toISOString()
       };
       
-      // Save auth token & user data BEFORE navigate call
       setAuth(adminUser as any, 'admin-secret-token-2026', null);
       setLoading(false);
       navigate('/admin/dashboard');
@@ -78,8 +75,6 @@ export const Login: React.FC = () => {
         password: cleanPassword
       });
 
-      console.log('Raw Admin Login API Response:', response.data);
-
       const { user, token } = response.data.data;
 
       if (user.role !== 'admin' && cleanEmail !== 'admin@hommiespace.com') {
@@ -88,7 +83,6 @@ export const Login: React.FC = () => {
         return;
       }
 
-      // Save auth state BEFORE redirect
       setAuth(user, token, null);
       setAttemptsLeft(3);
       setLoading(false);
@@ -96,31 +90,18 @@ export const Login: React.FC = () => {
     } catch (err: any) {
       console.error('Super Admin Login Error:', err);
 
-      if (isSuperAdminEmail) {
-        const adminUser = {
-          id: 'super-admin-01',
-          name: 'Super Administrator',
-          email: 'admin@hommiespace.com',
-          role: 'admin' as const,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        setAuth(adminUser as any, 'admin-secret-token-2026', null);
-        setLoading(false);
-        navigate('/admin/dashboard');
-        return;
-      }
-
+      // Decrement attempts on wrong password
       const newAttempts = attemptsLeft - 1;
       setAttemptsLeft(newAttempts);
 
       if (newAttempts <= 0) {
         setLockoutSeconds(60);
-        setError('🔒 Too many failed login attempts! Super Admin Portal locked for 60 seconds.');
+        setError('🔒 Too many failed login attempts. Portal locked for 60 seconds.');
       } else {
-        const serverMsg = err.response?.data?.message || 'Invalid email or password.';
+        const serverMsg = err.response?.data?.message || 'Invalid Super Admin email or password.';
         setError(`⚠️ ${serverMsg} (${newAttempts} attempt${newAttempts === 1 ? '' : 's'} remaining)`);
       }
+
       setLoading(false);
     }
   };
