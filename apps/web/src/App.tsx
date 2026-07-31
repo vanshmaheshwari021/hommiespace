@@ -10,6 +10,7 @@ import OrdersList from './pages/OrdersList.js';
 import SupportTickets from './pages/SupportTickets.js';
 import Login from './pages/Login.js';
 import Register from './pages/Register.js';
+import ProfilePage from './pages/ProfilePage.js';
 
 const queryClient = new QueryClient();
 
@@ -24,9 +25,9 @@ function App() {
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/vendors/:id" element={<VendorShowroom />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/orders" element={<OrdersList />} />
-            <Route path="/profile" element={<OrdersList />} />
-            <Route path="/profile/orders" element={<OrdersList />} />
+            <Route path="/orders" element={<ProfilePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/orders" element={<ProfilePage />} />
             <Route path="/profile/tickets" element={<SupportTickets />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
