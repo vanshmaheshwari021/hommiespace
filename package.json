@@ -11,7 +11,7 @@
     "dev:api": "npm run dev --workspace=apps/api",
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:admin": "npm run dev --workspace=apps/admin",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build --workspace=@hommiespace/shared && npm run build --workspace=@hommiespace/api && npm run build --workspace=@hommiespace/web && npm run build --workspace=@hommiespace/admin",
     "install:all": "npm install",
     "seed": "tsx scripts/seed.mts"
   },
