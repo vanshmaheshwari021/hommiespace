@@ -64,6 +64,11 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
 
     const { items, shippingAddress, billingAddress, paymentMethod, couponCode } = req.body;
 
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      res.status(400).json({ status: 'error', message: 'Order must contain at least one item.' });
+      return;
+    }
+
     const settings = await SettingsModel.findOne({});
     const taxRate = settings?.taxRate || 8;
     const shippingFee = settings?.shippingFee || 25;
@@ -72,28 +77,29 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
     const orderItems = [];
 
     for (const item of items) {
-      const product = await ProductModel.findById(item.productId);
+      const pId = item.product || item.productId || item.id;
+      const product = await ProductModel.findById(pId);
       if (!product) {
-        res.status(404).json({ status: 'error', message: `Product ${item.productId} not found.` });
+        res.status(404).json({ status: 'error', message: `Product ${pId} not found.` });
         return;
       }
 
       const variant = product.colorVariants.find(v => v.name === item.variantName);
       const itemPrice = product.price + (variant?.priceOffset || 0);
-      const itemSubtotal = itemPrice * item.qty;
+      const itemSubtotal = itemPrice * (item.qty || 1);
       subtotal += itemSubtotal;
 
       orderItems.push({
-        productId: product._id,
+        product: product._id,
         vendorId: product.vendorId,
         variantName: item.variantName || 'Default',
-        qty: item.qty,
+        qty: item.qty || 1,
         price: itemPrice,
-        subtotal: itemSubtotal
+        status: 'pending' as const
       });
 
       if (variant) {
-        variant.stock = Math.max(0, variant.stock - item.qty);
+        variant.stock = Math.max(0, variant.stock - (item.qty || 1));
       }
       product.stock = product.colorVariants.reduce((sum, v) => sum + v.stock, 0);
       await product.save();
@@ -116,18 +122,24 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
     const tax = Math.round((subtotal - discount) * (taxRate / 100));
     const total = subtotal - discount + tax + shippingFee;
 
+    const defaultAddr = {
+      street: '123 Luxury Lane',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      zipCode: '400001',
+      country: 'India'
+    };
+
     const order = new OrderModel({
       userId: req.user.id,
       customerName: req.user.name || 'Customer User',
       items: orderItems,
-      subtotal,
-      discount,
-      tax,
-      shippingFee,
-      total,
-      shippingAddress,
-      billingAddress,
-      paymentMethod,
+      totalPrice: total,
+      discountAmount: discount,
+      couponCode: couponCode || undefined,
+      shippingAddress: shippingAddress || defaultAddr,
+      billingAddress: billingAddress || shippingAddress || defaultAddr,
+      paymentMethod: paymentMethod === 'cod' ? 'cod' : 'card',
       paymentStatus: paymentMethod === 'cod' ? 'pending' : 'paid',
       orderStatus: 'pending'
     });
