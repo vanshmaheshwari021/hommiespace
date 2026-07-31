@@ -167,7 +167,7 @@ export const Login: React.FC = () => {
                 required
                 disabled={lockoutSeconds > 0}
                 className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed relative z-30"
-                placeholder="admin@hommiespace.com"
+                placeholder="enter email"
               />
             </div>
 
@@ -185,7 +185,7 @@ export const Login: React.FC = () => {
                   required
                   disabled={lockoutSeconds > 0}
                   className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 pr-20 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="••••••••"
+                  placeholder="enter password"
                 />
                 <button
                   type="button"
