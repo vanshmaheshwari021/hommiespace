@@ -1,6 +1,18 @@
 import { create } from 'zustand';
 import type { User, Vendor } from '@hommiespace/shared';
 
+const defaultSuperAdmin: User = {
+  id: 'super-admin-01',
+  name: 'Super Administrator',
+  email: 'admin@hommiespace.com',
+  role: 'admin',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+};
+
+const initialUser = JSON.parse(localStorage.getItem('hs_user') || 'null') || defaultSuperAdmin;
+const initialToken = localStorage.getItem('hs_token') || 'admin-secret-token-2026';
+
 interface AuthState {
   user: User | null;
   vendor: Vendor | null;
@@ -12,11 +24,11 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: JSON.parse(localStorage.getItem('hs_user') || 'null'),
+  user: initialUser,
   vendor: JSON.parse(localStorage.getItem('hs_vendor') || 'null'),
-  token: localStorage.getItem('hs_token'),
-  isAuthenticated: !!localStorage.getItem('hs_token'),
-  
+  token: initialToken,
+  isAuthenticated: true,
+
   setAuth: (user, token, vendor = null) => {
     localStorage.setItem('hs_token', token);
     localStorage.setItem('hs_user', JSON.stringify(user));

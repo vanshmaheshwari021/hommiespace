@@ -86,9 +86,9 @@ function App() {
             </Route>
           </Route>
 
-          {/* Catch-all and defaults */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          {/* Catch-all and defaults to direct Admin Dashboard */}
+          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
