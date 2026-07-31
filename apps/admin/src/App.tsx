@@ -39,7 +39,6 @@ function AuthHandoffHandler() {
       try {
         const user = JSON.parse(decodeURIComponent(userJson));
         setAuth(user, token, null);
-        window.history.replaceState({}, document.title, '/admin/dashboard');
         navigate('/admin/dashboard', { replace: true });
       } catch (err) {
         console.error('Failed to parse cross-origin token handoff:', err);
