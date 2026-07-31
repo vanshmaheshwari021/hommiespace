@@ -1,40 +1,48 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
-import { loginSchema } from '@hommiespace/shared';
-import type { LoginInput } from '@hommiespace/shared';
-import { Button, Card } from '@hommiespace/ui';
+import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
 
 export const Login: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors }
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema)
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
 
-  const onSubmit = async (data: LoginInput) => {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword) {
+      setError('Please enter both email address and password.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
+
     try {
-      const response = await API.post('/auth/login', data);
+      const response = await API.post('/auth/login', {
+        email: cleanEmail,
+        password: cleanPassword
+      });
+
       const { user, token } = response.data.data;
-      
       setAuth(user, token);
-      navigate('/');
+
+      // Successfully signed in -> Navigate to Orders tracking page
+      navigate('/orders');
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || 'Login failed. Please check credentials.'
-      );
+      console.error('Customer Login Error:', err);
+      const msg = err.response?.data?.message || 'User not available / Invalid email or password.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -43,64 +51,95 @@ export const Login: React.FC = () => {
   return (
     <div className="min-h-[75vh] flex items-center justify-center p-4 bg-brand-linen">
       <div className="w-full max-w-md">
-        <Card className="p-8 bg-white border border-brand-sand-dark/25" hoverEffect={false}>
-          <h2 className="font-serif text-xl font-bold text-brand-walnut mb-6 text-center">
-            Sign In to Storefront
+        <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl" hoverEffect={false}>
+          <h2 className="font-serif text-xl font-bold text-brand-walnut mb-2 text-center">
+            Sign In to Customer Account
           </h2>
+          <p className="text-xs text-brand-clay mb-6 text-center font-sans">
+            Access your order history, track shipments, and manage delivery addresses.
+          </p>
 
+          {/* Error Banner with Registration Option */}
           {error && (
-            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/20">
-              {error}
+            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30 text-left space-y-2">
+              <div>⚠️ {error}</div>
+              <div className="pt-2 border-t border-brand-terracotta/20 flex justify-between items-center text-[10px]">
+                <span>No account found?</span>
+                <a href="http://localhost:5174/register" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-brand-walnut uppercase">
+                  Register Studio / Partner →
+                </a>
+              </div>
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-left">
+          <form onSubmit={handleSubmit} className="space-y-6 text-left">
             <div>
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Email Address
               </label>
               <input
                 type="email"
-                {...register('email')}
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
-                placeholder="customer@gmail.com"
+                placeholder="you@example.com"
               />
-              {errors.email && (
-                <p className="text-brand-terracotta text-[10px] mt-1 font-semibold">
-                  {errors.email.message}
-                </p>
-              )}
             </div>
 
             <div>
               <label className="block text-[10px] uppercase tracking-widest font-semibold text-brand-clay mb-2">
                 Password
               </label>
-              <input
-                type="password"
-                {...register('password')}
-                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
-                placeholder="••••••••"
-              />
-              {errors.password && (
-                <p className="text-brand-terracotta text-[10px] mt-1 font-semibold">
-                  {errors.password.message}
-                </p>
-              )}
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 pr-10 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowPassword(prev => !prev);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-clay hover:text-brand-walnut transition-colors p-2 cursor-pointer z-10"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <svg className="w-4 h-4 text-brand-terracotta" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-brand-clay" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              className="w-full py-4 text-center mt-2"
               disabled={loading}
+              style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
+              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
             >
-              {loading ? 'Signing In...' : 'Sign In'}
-            </Button>
+              {loading ? 'Signing In...' : 'Sign In & Track Orders →'}
+            </button>
           </form>
           
           <div className="mt-6 text-center text-xs text-brand-clay font-sans">
-            <span>Want to sell items? </span>
+            <span>Want to sell items as a partner? </span>
             <a href="http://localhost:5174/register" target="_blank" rel="noopener noreferrer" className="text-brand-terracotta font-semibold hover:underline">
               Register a Studio
             </a>

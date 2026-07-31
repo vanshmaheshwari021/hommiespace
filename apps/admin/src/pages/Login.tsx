@@ -5,8 +5,8 @@ import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
 
 export const Login: React.FC = () => {
-  const [email, setEmail] = useState('admin@hommiespace.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -20,7 +20,7 @@ export const Login: React.FC = () => {
     const cleanPassword = password.trim();
 
     if (!cleanEmail || !cleanPassword) {
-      setError('Please enter both email and password.');
+      setError('Please enter both email address and password.');
       return;
     }
 
@@ -49,18 +49,20 @@ export const Login: React.FC = () => {
 
       setAuth(user, token, vendor);
 
+      // Role-Based Smart Navigation
       if (user.role === 'admin') {
         window.location.href = '/admin/dashboard';
       } else if (user.role === 'vendor') {
         window.location.href = '/vendor/dashboard';
+      } else if (user.role === 'customer') {
+        window.location.href = 'http://localhost:5173/orders';
       } else {
-        setError('Forbidden: Customer accounts cannot access the Partner Portal.');
+        setError('Forbidden access role.');
       }
     } catch (err: any) {
       console.error('Login Error:', err);
-      setError(
-        err.response?.data?.message || 'Login failed. Please check your credentials.'
-      );
+      const msg = err.response?.data?.message || 'User not available / Invalid email or password.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -79,42 +81,23 @@ export const Login: React.FC = () => {
           </p>
         </div>
 
-        <Card className="p-8 bg-white border border-brand-sand-dark/25" hoverEffect={false}>
+        <Card className="p-8 bg-white border border-brand-sand-dark/25 shadow-xl" hoverEffect={false}>
           <h2 className="font-serif text-xl font-bold text-brand-walnut mb-6 text-center">
             Sign In to Dashboard
           </h2>
 
+          {/* User Not Available Error Banner with Register Link */}
           {error && (
-            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/20">
-              {error}
+            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30 text-left space-y-2">
+              <div>⚠️ {error}</div>
+              <div className="pt-2 border-t border-brand-terracotta/20 flex justify-between items-center text-[10px]">
+                <span>Need an account?</span>
+                <Link to="/register" className="underline font-bold hover:text-brand-walnut uppercase">
+                  Register Studio Account →
+                </Link>
+              </div>
             </div>
           )}
-
-          {/* One-Tap Demo Login Fillers */}
-          <div className="mb-6 grid grid-cols-2 gap-2 text-left">
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('admin@hommiespace.com');
-                setPassword('password123');
-              }}
-              className="p-2.5 bg-brand-sand-light/60 hover:bg-brand-sand-light border border-brand-sand-dark/20 text-[10px] uppercase font-bold tracking-wider text-brand-walnut text-left cursor-pointer transition-colors"
-            >
-              <span className="block text-brand-terracotta">Demo Admin</span>
-              admin@hommiespace.com
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('nordic@hommiespace.com');
-                setPassword('password123');
-              }}
-              className="p-2.5 bg-brand-sand-light/60 hover:bg-brand-sand-light border border-brand-sand-dark/20 text-[10px] uppercase font-bold tracking-wider text-brand-walnut text-left cursor-pointer transition-colors"
-            >
-              <span className="block text-brand-terracotta">Demo Vendor</span>
-              nordic@hommiespace.com
-            </button>
-          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             <div>
@@ -128,7 +111,7 @@ export const Login: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
-                placeholder="admin@hommiespace.com"
+                placeholder="you@hommiespace.com"
               />
             </div>
 
@@ -172,6 +155,7 @@ export const Login: React.FC = () => {
               </div>
             </div>
 
+            {/* Prominent High-Contrast Native Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -185,7 +169,7 @@ export const Login: React.FC = () => {
           <div className="mt-6 text-center text-xs text-brand-clay font-sans">
             <span>Want to sell on HommieSpace? </span>
             <Link to="/register" className="text-brand-terracotta font-semibold hover:underline">
-              Register here
+              Register Studio Partner Account
             </Link>
           </div>
         </Card>
