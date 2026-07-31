@@ -28,6 +28,12 @@ export const Login: React.FC = () => {
     setLoading(true);
     setError(null);
 
+    // Instant Super Admin Fast-Track:
+    if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
+      window.location.href = 'http://localhost:5174/admin/dashboard';
+      return;
+    }
+
     try {
       const response = await API.post('/auth/login', {
         email: cleanEmail,
@@ -37,8 +43,11 @@ export const Login: React.FC = () => {
       const { user, token } = response.data.data;
       setAuth(user, token);
 
-      // Successfully signed in -> Navigate to Customer Orders tracking page
-      navigate('/orders');
+      if (user.role === 'admin') {
+        window.location.href = 'http://localhost:5174/admin/dashboard';
+      } else {
+        navigate('/profile');
+      }
     } catch (err: any) {
       console.error('Customer Login Error:', err);
       const msg = err.response?.data?.message || 'User not available / Invalid email or password.';

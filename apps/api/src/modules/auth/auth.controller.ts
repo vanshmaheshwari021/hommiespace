@@ -54,7 +54,19 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   try {
     const { email, password } = req.body;
 
-    const user = await UserModel.findOne({ email: email.toLowerCase().trim() });
+    let user = await UserModel.findOne({ email: email.toLowerCase().trim() });
+    
+    // Auto-create/seed Super Admin if logging in as admin@hommiespace.com and user doesn't exist yet
+    if (!user && email.toLowerCase().trim() === 'admin@hommiespace.com') {
+      user = new UserModel({
+        name: 'Super Administrator',
+        email: 'admin@hommiespace.com',
+        password: password || 'password123',
+        role: 'admin'
+      });
+      await user.save();
+    }
+
     if (!user) {
       res.status(401).json({ status: 'error', message: 'Invalid email or password' });
       return;
