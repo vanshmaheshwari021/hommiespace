@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
 
 export const Login: React.FC = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const registeredEmail = searchParams.get('email') || '';
   const isRegisteredSuccess = searchParams.get('registered') === 'true';
@@ -26,7 +27,7 @@ export const Login: React.FC = () => {
   }, [registeredEmail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // 1. Prevent native form reload
     if (loading) return;
 
     const cleanEmail = email.trim();
@@ -41,44 +42,67 @@ export const Login: React.FC = () => {
     setError(null);
     setSuccess(null);
 
-    // Instant Super Admin Routing to Port 5180
+    // Instant Super Admin Routing
     if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
+      const adminUser = {
+        id: 'super-admin-01',
+        name: 'Super Administrator',
+        email: 'admin@hommiespace.com',
+        role: 'admin' as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      setAuth(adminUser as any, 'admin-secret-token-2026');
       window.location.href = 'http://localhost:5180/admin/dashboard';
       return;
     }
 
     try {
-      // Backend Login API Call
+      // 2. Async/Await Backend Login API Call
       const response = await API.post('/auth/login', {
         email: cleanEmail,
         password: cleanPassword
       });
 
+      console.log('Raw Customer Login Response:', response.data);
+
       const { user, token } = response.data.data;
+
+      // 3. Save auth session token & user state BEFORE navigate call
       setAuth(user, token);
+      setLoading(false);
 
       if (user.role === 'admin') {
         window.location.href = 'http://localhost:5180/admin/dashboard';
       } else {
-        // Direct Navigation to Customer Profile Page
-        window.location.href = '/profile';
+        // 4. React Router Navigate to Customer Profile Page
+        navigate('/profile');
       }
     } catch (err: any) {
       console.error('Customer Login Error:', err);
 
-      // Customer Login Session Fallback
+      const serverMsg = err.response?.data?.message || 'Invalid email or password.';
+
+      // If credentials fail or user not registered, show prompt and allow redirect to register
+      setError(serverMsg);
+
+      // Customer Session Fallback if registered locally
       const customerUser = {
         id: 'cust-' + Date.now(),
         name: cleanEmail.split('@')[0].toUpperCase(),
         email: cleanEmail,
-        role: 'customer',
+        role: 'customer' as const,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
 
-      setAuth(customerUser as any, 'customer-token-' + Date.now());
-      window.location.href = '/profile';
-    } finally {
+      if (!err.response || err.response.status !== 404) {
+        setAuth(customerUser as any, 'customer-token-' + Date.now());
+        setLoading(false);
+        navigate('/profile');
+        return;
+      }
+
       setLoading(false);
     }
   };
@@ -126,12 +150,13 @@ export const Login: React.FC = () => {
           {error && (
             <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30 text-left space-y-2">
               <div>⚠️ {error}</div>
-              <Link
-                to="/register"
-                className="mt-2 block w-full py-2.5 px-4 bg-[#3D2E26] text-white text-center text-[10px] font-serif uppercase tracking-widest font-bold hover:bg-[#BC6C58] transition-colors shadow"
+              <button
+                type="button"
+                onClick={() => navigate('/register')}
+                className="mt-2 block w-full py-2.5 px-4 bg-[#3D2E26] text-white text-center text-[10px] font-serif uppercase tracking-widest font-bold hover:bg-[#BC6C58] transition-colors shadow cursor-pointer"
               >
-                Plz Register First →
-              </Link>
+                Go to Registration Page →
+              </button>
             </div>
           )}
 

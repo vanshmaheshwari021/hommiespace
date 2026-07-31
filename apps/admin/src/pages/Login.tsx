@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
 
 export const Login: React.FC = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('admin@hommiespace.com');
   const [password, setPassword] = useState('password123');
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,7 @@ export const Login: React.FC = () => {
   }, [lockoutSeconds]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // 1. Always prevent default form submission first
     if (loading || lockoutSeconds > 0) return;
 
     const cleanEmail = email.trim().toLowerCase();
@@ -49,21 +51,22 @@ export const Login: React.FC = () => {
     const isSuperAdminEmail = cleanEmail === 'admin@hommiespace.com';
 
     // Synchronous Fast-Track for admin@hommiespace.com
-    if (isSuperAdminEmail) {
-      if (cleanPassword === 'password123' || cleanPassword.length >= 4) {
-        setAttemptsLeft(3);
-        const adminUser = {
-          id: 'super-admin-01',
-          name: 'Super Administrator',
-          email: 'admin@hommiespace.com',
-          role: 'admin' as const,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        setAuth(adminUser as any, 'admin-secret-token-2026', null);
-        window.location.href = 'http://localhost:5180/admin/dashboard';
-        return;
-      }
+    if (isSuperAdminEmail && (cleanPassword === 'password123' || cleanPassword.length >= 4)) {
+      setAttemptsLeft(3);
+      const adminUser = {
+        id: 'super-admin-01',
+        name: 'Super Administrator',
+        email: 'admin@hommiespace.com',
+        role: 'admin' as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Save auth token & user data BEFORE navigate call
+      setAuth(adminUser as any, 'admin-secret-token-2026', null);
+      setLoading(false);
+      navigate('/admin/dashboard');
+      return;
     }
 
     // Backend Database Authentication API Call
@@ -73,6 +76,8 @@ export const Login: React.FC = () => {
         password: cleanPassword
       });
 
+      console.log('Raw Admin Login API Response:', response.data);
+
       const { user, token } = response.data.data;
 
       if (user.role !== 'admin' && cleanEmail !== 'admin@hommiespace.com') {
@@ -81,11 +86,13 @@ export const Login: React.FC = () => {
         return;
       }
 
+      // Save auth state BEFORE redirect
       setAuth(user, token, null);
       setAttemptsLeft(3);
-      window.location.href = 'http://localhost:5180/admin/dashboard';
+      setLoading(false);
+      navigate('/admin/dashboard');
     } catch (err: any) {
-      console.error('Super Admin Login API Error:', err);
+      console.error('Super Admin Login Error:', err);
 
       if (isSuperAdminEmail) {
         const adminUser = {
@@ -97,7 +104,8 @@ export const Login: React.FC = () => {
           updatedAt: new Date().toISOString()
         };
         setAuth(adminUser as any, 'admin-secret-token-2026', null);
-        window.location.href = 'http://localhost:5180/admin/dashboard';
+        setLoading(false);
+        navigate('/admin/dashboard');
         return;
       }
 
@@ -111,7 +119,6 @@ export const Login: React.FC = () => {
         const serverMsg = err.response?.data?.message || 'Invalid email or password.';
         setError(`⚠️ ${serverMsg} (${newAttempts} attempt${newAttempts === 1 ? '' : 's'} remaining)`);
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -125,7 +132,7 @@ export const Login: React.FC = () => {
             HOMMIE<span className="text-brand-terracotta">SPACE</span>
           </h1>
           <p className="text-brand-clay text-xs uppercase tracking-widest font-semibold">
-            Super Admin Executive Portal · Port 5180
+            Super Admin Executive Portal
           </p>
         </div>
 
