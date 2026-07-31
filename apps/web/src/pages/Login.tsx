@@ -42,7 +42,7 @@ export const Login: React.FC = () => {
     setError(null);
     setSuccess(null);
 
-    // Instant Super Admin Routing
+    // Instant Super Admin Routing with Token Query Param Handoff
     if (cleanEmail.toLowerCase() === 'admin@hommiespace.com') {
       const adminUser = {
         id: 'super-admin-01',
@@ -52,8 +52,8 @@ export const Login: React.FC = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      setAuth(adminUser as any, 'admin-secret-token-2026');
-      window.location.href = 'http://localhost:5180/admin/dashboard';
+      const adminToken = 'admin-secret-token-2026';
+      window.location.href = `http://localhost:5180/login?token=${encodeURIComponent(adminToken)}&user=${encodeURIComponent(JSON.stringify(adminUser))}`;
       return;
     }
 
@@ -68,13 +68,12 @@ export const Login: React.FC = () => {
 
       const { user, token } = response.data.data;
 
-      // 3. Save auth session token & user state BEFORE navigate call
-      setAuth(user, token);
-      setLoading(false);
-
       if (user.role === 'admin') {
-        window.location.href = 'http://localhost:5180/admin/dashboard';
+        window.location.href = `http://localhost:5180/login?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(user))}`;
       } else {
+        // Save auth session token & user state BEFORE navigate call for customer
+        setAuth(user, token);
+        setLoading(false);
         // 4. React Router Navigate to Customer Profile Page
         navigate('/profile');
       }
@@ -82,21 +81,18 @@ export const Login: React.FC = () => {
       console.error('Customer Login Error:', err);
 
       const serverMsg = err.response?.data?.message || 'Invalid email or password.';
-
-      // If credentials fail or user not registered, show prompt and allow redirect to register
       setError(serverMsg);
 
-      // Customer Session Fallback if registered locally
-      const customerUser = {
-        id: 'cust-' + Date.now(),
-        name: cleanEmail.split('@')[0].toUpperCase(),
-        email: cleanEmail,
-        role: 'customer' as const,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      if (!err.response || err.response.status !== 404) {
+      // Only fallback on true network failure (backend unreachable)
+      if (!err.response) {
+        const customerUser = {
+          id: 'cust-' + Date.now(),
+          name: cleanEmail.split('@')[0].toUpperCase(),
+          email: cleanEmail,
+          role: 'customer' as const,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
         setAuth(customerUser as any, 'customer-token-' + Date.now());
         setLoading(false);
         navigate('/profile');
