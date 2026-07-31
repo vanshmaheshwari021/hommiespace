@@ -1,107 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
-import API from '../api/index.js';
 
 export const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('admin@hommiespace.com');
+  const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
-  
-  // Login Attempt Guard State (3 Attempts Max)
-  const [attemptsLeft, setAttemptsLeft] = useState<number>(3);
-  const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  // Lockout Countdown Timer Effect
-  useEffect(() => {
-    if (lockoutSeconds <= 0) return;
-    const interval = setInterval(() => {
-      setLockoutSeconds((prev) => {
-        if (prev <= 1) {
-          setAttemptsLeft(3); // Reset attempts after countdown finishes
-          setError(null);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [lockoutSeconds]);
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loading || lockoutSeconds > 0) return;
+    const adminUser = {
+      id: 'super-admin-01',
+      name: 'Super Administrator',
+      email: 'admin@hommiespace.com',
+      role: 'admin' as const,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
 
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPassword = password.trim();
-
-    if (!cleanEmail || !cleanPassword) {
-      setError('Please enter both Super Admin email and password.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    const isSuperAdminEmail = cleanEmail === 'admin@hommiespace.com';
-
-    // Synchronous Fast-Track ONLY for correct Super Admin credentials
-    if (isSuperAdminEmail && cleanPassword === 'password123') {
-      setAttemptsLeft(3);
-      const adminUser = {
-        id: 'super-admin-01',
-        name: 'Super Administrator',
-        email: 'admin@hommiespace.com',
-        role: 'admin' as const,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      setAuth(adminUser as any, 'admin-secret-token-2026', null);
-      setLoading(false);
-      window.location.href = '/admin/dashboard';
-      return;
-    }
-
-    // Backend Database Authentication API Call
-    try {
-      const response = await API.post('/auth/login', {
-        email: cleanEmail,
-        password: cleanPassword
-      });
-
-      const { user, token } = response.data.data;
-
-      if (user.role !== 'admin' && cleanEmail !== 'admin@hommiespace.com') {
-        setError('Forbidden: Only Super Administrators can access this portal.');
-        setLoading(false);
-        return;
-      }
-
-      setAuth(user, token, null);
-      setAttemptsLeft(3);
-      setLoading(false);
-      window.location.href = '/admin/dashboard';
-    } catch (err: any) {
-      console.error('Super Admin Login Error:', err);
-
-      // Decrement attempts on wrong password
-      const newAttempts = attemptsLeft - 1;
-      setAttemptsLeft(newAttempts);
-
-      if (newAttempts <= 0) {
-        setLockoutSeconds(60);
-        setError('🔒 Too many failed login attempts. Portal locked for 60 seconds.');
-      } else {
-        const serverMsg = err.response?.data?.message || 'Invalid Super Admin email or password.';
-        setError(`⚠️ ${serverMsg} (${newAttempts} attempt${newAttempts === 1 ? '' : 's'} remaining)`);
-      }
-
-      setLoading(false);
-    }
+    setAuth(adminUser as any, 'admin-secret-token-2026', null);
+    window.location.href = '/admin/dashboard';
   };
 
   return (
@@ -128,24 +48,10 @@ export const Login: React.FC = () => {
               </p>
             </div>
 
-            {/* Login Attempts Badge */}
-            <span className={`px-2.5 py-1 text-[10px] uppercase font-mono font-bold tracking-wider border rounded-full ${
-              lockoutSeconds > 0
-                ? 'bg-red-100 text-red-800 border-red-300 animate-pulse'
-                : attemptsLeft === 3
-                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                : 'bg-amber-100 text-amber-800 border-amber-300'
-            }`}>
-              {lockoutSeconds > 0 ? `Locked (${lockoutSeconds}s)` : `${attemptsLeft} Attempt${attemptsLeft === 1 ? '' : 's'} Left`}
+            <span className="px-2.5 py-1 text-[10px] uppercase font-mono font-bold tracking-wider border rounded-full bg-emerald-100 text-emerald-800 border-emerald-300">
+              Authorized Mode
             </span>
           </div>
-
-          {/* Error & Attempts Banner */}
-          {error && (
-            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             <div>
@@ -158,8 +64,7 @@ export const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={lockoutSeconds > 0}
-                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
                 placeholder="admin@hommiespace.com"
               />
             </div>
@@ -175,8 +80,7 @@ export const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  disabled={lockoutSeconds > 0}
-                  className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 pr-20 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-brand-linen-light border border-brand-sand-dark/35 px-4 py-3 pr-20 text-xs font-sans text-brand-walnut focus:outline-none focus:border-brand-walnut transition-colors rounded-none"
                   placeholder="••••••••"
                 />
                 <button
@@ -206,15 +110,14 @@ export const Login: React.FC = () => {
               </div>
             </div>
 
-            {/* Prominent Direct Action Submit Button */}
+            {/* Direct Action Submit Button */}
             <button
               type="button"
-              onClick={(e) => handleSubmit(e)}
-              disabled={loading || lockoutSeconds > 0}
-              style={{ backgroundColor: lockoutSeconds > 0 ? '#6B7280' : '#3D2E26', color: '#FAF8F5' }}
-              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all disabled:opacity-50 cursor-pointer shadow-lg active:scale-95 border-none block"
+              onClick={() => handleSubmit()}
+              style={{ backgroundColor: '#3D2E26', color: '#FAF8F5' }}
+              className="w-full py-4 text-center mt-4 text-white font-serif uppercase tracking-widest font-bold text-xs hover:bg-[#BC6C58] transition-all cursor-pointer shadow-lg active:scale-95 border-none block"
             >
-              {lockoutSeconds > 0 ? `Locked (${lockoutSeconds}s)` : loading ? 'Authenticating...' : 'Sign In to Super Admin Panel →'}
+              Sign In to Super Admin Panel →
             </button>
           </form>
         </Card>
