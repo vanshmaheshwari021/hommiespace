@@ -3,18 +3,27 @@ import { Card } from '@hommiespace/ui';
 import { useAuthStore } from '../store/auth.js';
 
 export const Login: React.FC = () => {
-  const [email, setEmail] = useState('admin@hommiespace.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword) {
+      setError('Please enter both Super Admin email and password.');
+      return;
+    }
+
     const adminUser = {
       id: 'super-admin-01',
       name: 'Super Administrator',
-      email: 'admin@hommiespace.com',
+      email: cleanEmail || 'admin@hommiespace.com',
       role: 'admin' as const,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -52,6 +61,13 @@ export const Login: React.FC = () => {
               Authorized Mode
             </span>
           </div>
+
+          {/* Error Banner */}
+          {error && (
+            <div className="mb-6 p-4 bg-brand-terracotta/10 text-brand-terracotta text-xs font-semibold uppercase tracking-wider border border-brand-terracotta/30">
+              ⚠️ {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             <div>
