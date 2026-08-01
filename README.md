@@ -4,23 +4,25 @@
 
 ---
 
-## 🌐 Live Deployed Application Links
+## 🌐 Live Production Application Links (Vercel & Render)
 
-| Application Service | Live Production URL | Local Dev URL / Port | Repository Target |
+| Application Service | Hosting Platform | Live Production URL | Source Directory |
 | :--- | :--- | :--- | :--- |
-| **🛍️ Customer Storefront** | [https://hommiespace.vercel.app](https://hommiespace.vercel.app) | `http://localhost:5173` | `apps/web` |
-| **👑 Super Admin & Vendor Portal** | [https://hommiespace-admin.vercel.app](https://hommiespace-admin.vercel.app) | `http://localhost:5180` | `apps/admin` |
-| **⚙️ Express REST API Backend** | [https://hommiespace-api.onrender.com/api](https://hommiespace-api.onrender.com/api) | `http://localhost:5000/api` | `apps/api` |
+| **🛍️ Customer Storefront App** | **Vercel** | [https://hommiespace.vercel.app](https://hommiespace.vercel.app) | `apps/web` |
+| **👑 Super Admin & Vendor Portal** | **Vercel** | [https://hommiespace-admin.vercel.app](https://hommiespace-admin.vercel.app) | `apps/admin` |
+| **⚙️ Express REST API Backend** | **Render.com** | [https://hommiespace-api.onrender.com/api](https://hommiespace-api.onrender.com/api) | `apps/api` |
 
 ---
 
-## 🔑 Default Access Credentials
+## 🔑 Production Access Credentials
 
-| Access Portal | URL / Port | Role | Email | Password |
+| Access Portal | Live Vercel Production URL | Role | Login Email | Password |
 | :--- | :--- | :--- | :--- | :--- |
-| **👑 Super Admin Executive Portal** | `http://localhost:5180/login` | Super Admin | `admin@hommiespace.com` | `password123` |
-| **🏬 Vendor Partner Studio** | `http://localhost:5180/login` | Vendor | `vendor@hommiespace.com` | `password123` |
-| **🛍️ Customer Storefront** | `http://localhost:5173/login` | Customer | `customer@hommiespace.com` | `password123` |
+| **👑 Super Admin Executive Portal** | `https://hommiespace-admin.vercel.app/login` | Super Admin | `admin@hommiespace.com` | `password123` |
+| **🏬 Vendor Partner Studio** | `https://hommiespace-admin.vercel.app/login` | Vendor Studio | `vendor@hommiespace.com` | `password123` |
+| **🛍️ Customer Storefront** | `https://hommiespace.vercel.app/login` | Customer | `customer@hommiespace.com` | `password123` |
+
+*(Local Development Fallback URLs: Customer Storefront `http://localhost:5173/login` | Admin & Vendor Portal `http://localhost:5180/login`)*
 
 ---
 
@@ -29,9 +31,9 @@
 ```
 2necom/
 ├── apps/
-│   ├── web/               # Customer Storefront Web App (Port 5173) -> https://hommiespace.vercel.app
-│   ├── admin/             # Executive Admin & Vendor Partner Portal (Port 5180) -> https://hommiespace-admin.vercel.app
-│   └── api/               # Express REST API Backend & MongoDB Models (Port 5000) -> https://hommiespace-api.onrender.com
+│   ├── web/               # Customer Storefront Web App (Vercel) -> https://hommiespace.vercel.app
+│   ├── admin/             # Executive Admin & Vendor Partner Portal (Vercel) -> https://hommiespace-admin.vercel.app
+│   └── api/               # Express REST API Backend & MongoDB Models (Render) -> https://hommiespace-api.onrender.com
 ├── packages/
 │   ├── ui/                # Shared Design System Components (Card, Table, Button, etc.)
 │   └── shared/            # Shared TypeScript Interfaces, Schemas & Utils
@@ -89,12 +91,10 @@ npm run dev --workspace=apps/admin
 
 ---
 
-## 🚢 Production Deployment
+## 🚢 Production Deployment Setup (Vercel & Render)
 
-The project contains separate deployment configurations for independent hosting:
-
-### 1. Express Backend API (`apps/api`)
-- **Host Platform**: Render / Railway / Heroku
+### 1. Express Backend API (`apps/api` on Render.com)
+- **Host Platform**: Render.com (using `render.yaml`)
 - **Live Endpoint**: `https://hommiespace-api.onrender.com/api`
 - **Build Command**: `npm install && npm run build --workspace=apps/api`
 - **Start Command**: `node apps/api/dist/server.js`
@@ -103,8 +103,8 @@ The project contains separate deployment configurations for independent hosting:
   - `JWT_SECRET`: `hommiespace-production-jwt-secret-2026`
   - `NODE_ENV`: `production`
 
-### 2. Storefront Web App (`apps/web`)
-- **Host Platform**: Vercel (`apps/web/vercel.json` included)
+### 2. Storefront Web App (`apps/web` on Vercel)
+- **Host Platform**: Vercel (`apps/web/vercel.json` configured)
 - **Live Storefront**: `https://hommiespace.vercel.app`
 - **Root Directory**: `apps/web`
 - **Build Command**: `npm run build`
@@ -112,8 +112,8 @@ The project contains separate deployment configurations for independent hosting:
 - **Environment Variables**:
   - `VITE_API_URL`: `https://hommiespace-api.onrender.com/api`
 
-### 3. Admin & Studio Portal (`apps/admin`)
-- **Host Platform**: Vercel (`apps/admin/vercel.json` included)
+### 3. Admin & Studio Portal (`apps/admin` on Vercel)
+- **Host Platform**: Vercel (`apps/admin/vercel.json` configured)
 - **Live Portal**: `https://hommiespace-admin.vercel.app`
 - **Root Directory**: `apps/admin`
 - **Build Command**: `npm run build`
