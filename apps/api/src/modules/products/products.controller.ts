@@ -468,11 +468,13 @@ export const SAMPLE_PRODUCTS = [
 ];
 
 const SAMPLE_CATEGORIES = [
+  { id: 'cat-decor', name: 'Organic Decor', slug: 'decor-pieces' },
   { id: 'cat-chairs', name: 'Chairs & Seating', slug: 'chairs' },
   { id: 'cat-tables', name: 'Dining Tables', slug: 'tables' },
-  { id: 'cat-decor', name: 'Vases & Decor', slug: 'decor' },
-  { id: 'cat-lighting', name: 'Lighting & Lamps', slug: 'lighting' },
-  { id: 'cat-sofas', name: 'Sofas & Couches', slug: 'sofas' }
+  { id: 'cat-lighting', name: 'Architectural Lighting', slug: 'lighting' },
+  { id: 'cat-sofas', name: 'Sofas & Couches', slug: 'sofas' },
+  { id: 'cat-furniture', name: 'Solid Wood Furniture', slug: 'furniture' },
+  { id: 'cat-kitchenware', name: 'Artisan Kitchenware', slug: 'kitchenware' }
 ];
 
 export const getProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -488,12 +490,41 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
     } catch (dbErr) {}
 
     if (category) {
-      list = list.filter(p => (p.categoryId as any)?.slug === category || (p.categoryId as any) === category);
+      const catStr = String(category).toLowerCase();
+      list = list.filter(p => {
+        const slug = ((p.categoryId as any)?.slug || (p.categoryId as any) || '').toString().toLowerCase();
+        const name = ((p.categoryId as any)?.name || '').toString().toLowerCase();
+
+        if (catStr === 'decor-pieces' || catStr === 'decor') {
+          return slug.includes('decor') || name.includes('decor');
+        }
+        if (catStr === 'furniture') {
+          return slug.includes('chair') || slug.includes('table') || slug.includes('sofa') || name.includes('chair') || name.includes('table') || name.includes('sofa');
+        }
+        if (catStr === 'kitchenware') {
+          return slug.includes('decor') || slug.includes('table') || name.includes('kitchen') || name.includes('decor');
+        }
+        if (catStr.includes('light')) {
+          return slug.includes('light') || name.includes('light');
+        }
+        if (catStr.includes('chair')) {
+          return slug.includes('chair') || name.includes('chair');
+        }
+        if (catStr.includes('table')) {
+          return slug.includes('table') || name.includes('table');
+        }
+        if (catStr.includes('sofa') || catStr.includes('couch')) {
+          return slug.includes('sofa') || name.includes('sofa');
+        }
+        return slug.includes(catStr) || catStr.includes(slug);
+      });
     }
+
     if (search) {
       const s = String(search).toLowerCase();
       list = list.filter(p => p.name.toLowerCase().includes(s) || (p.material && p.material.toLowerCase().includes(s)));
     }
+
     if (limit) {
       list = list.slice(0, Number(limit));
     }
