@@ -450,7 +450,7 @@ export const SAMPLE_PRODUCTS = [
   {
     _id: 'prod-sofa-09', id: 'prod-sofa-09',
     name: 'Uppsala Sandstone Fabric Convertible Sofa Bed', slug: 'uppsala-sandstone-fabric-convertible-sofa-bed',
-    price: 7800, rating: 4.6, numReviews: 17, material: 'Stain-Resistant Sandstone Weave', status: 'active',
+    price: 78000, rating: 4.6, numReviews: 17, material: 'Stain-Resistant Sandstone Weave', status: 'active',
     categoryId: { _id: 'cat-sofas', name: 'Sofas & Couches', slug: 'sofas' },
     vendorId: { _id: 'ven-nordic', businessName: 'Nordic Craft Studio', logoUrl: '/logo.png' },
     images: ['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80', 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=800&q=80'],
@@ -478,25 +478,25 @@ const SAMPLE_CATEGORIES = [
 export const getProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { category, vendorId, search, limit, status } = req.query;
-    let list = SAMPLE_PRODUCTS;
-
-    if (category) {
-      list = list.filter(p => p.categoryId.slug === category);
-    }
-    if (search) {
-      const s = String(search).toLowerCase();
-      list = list.filter(p => p.name.toLowerCase().includes(s) || p.material.toLowerCase().includes(s));
-    }
-    if (limit) {
-      list = list.slice(0, Number(limit));
-    }
+    let list = [...SAMPLE_PRODUCTS];
 
     try {
       const dbProducts = await ProductModel.find({}).populate('categoryId', 'name slug').populate('vendorId', 'businessName logoUrl').catch(() => []);
       if (dbProducts && dbProducts.length > 0) {
-        list = dbProducts as any;
+        list = [...(dbProducts as any), ...list];
       }
     } catch (dbErr) {}
+
+    if (category) {
+      list = list.filter(p => (p.categoryId as any)?.slug === category || (p.categoryId as any) === category);
+    }
+    if (search) {
+      const s = String(search).toLowerCase();
+      list = list.filter(p => p.name.toLowerCase().includes(s) || (p.material && p.material.toLowerCase().includes(s)));
+    }
+    if (limit) {
+      list = list.slice(0, Number(limit));
+    }
 
     res.status(200).json({
       status: 'success',
