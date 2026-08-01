@@ -1,6 +1,16 @@
 import { create } from 'zustand';
 import type { User, Vendor } from '@hommiespace/shared';
 
+let storedUser: User | null = null;
+try {
+  const parsed = JSON.parse(localStorage.getItem('hs_user') || 'null');
+  if (parsed && (parsed.role === 'admin' || parsed.role === 'vendor')) {
+    storedUser = parsed;
+  }
+} catch (e) {}
+
+const initialToken = localStorage.getItem('hs_token');
+
 interface AuthState {
   user: User | null;
   vendor: Vendor | null;
@@ -12,10 +22,10 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  vendor: null,
-  token: null,
-  isAuthenticated: false,
+  user: storedUser,
+  vendor: JSON.parse(localStorage.getItem('hs_vendor') || 'null'),
+  token: initialToken,
+  isAuthenticated: !!(initialToken && storedUser),
 
   setAuth: (user, token, vendor = null) => {
     localStorage.setItem('hs_token', token);

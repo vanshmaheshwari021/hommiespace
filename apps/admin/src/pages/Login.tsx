@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.js';
 import API from '../api/index.js';
 
 export const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('admin@hommiespace.com');
+  const [password, setPassword] = useState('password123');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -14,12 +16,8 @@ export const Login: React.FC = () => {
   const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  // Force clean blank state on mount/reload to prevent browser password autofill & session lingering
   useEffect(() => {
-    setEmail('');
-    setPassword('');
     setError(null);
-    useAuthStore.getState().logout();
   }, []);
 
   // Lockout Countdown Timer Effect
@@ -67,6 +65,7 @@ export const Login: React.FC = () => {
       
       setAuth(adminUser as any, 'admin-secret-token-2026', null);
       setLoading(false);
+      navigate('/admin/dashboard', { replace: true });
       window.location.href = '/admin/dashboard';
       return;
     }
@@ -97,6 +96,7 @@ export const Login: React.FC = () => {
 
       setAuth(vendorUser as any, 'vendor-secret-token-2026', vendorProfile as any);
       setLoading(false);
+      navigate('/vendor/dashboard', { replace: true });
       window.location.href = '/vendor/dashboard';
       return;
     }
