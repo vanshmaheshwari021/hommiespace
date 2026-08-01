@@ -14,11 +14,12 @@ export const Login: React.FC = () => {
   const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  // Force clean blank state on mount/reload to prevent browser password autofill
+  // Force clean blank state on mount/reload to prevent browser password autofill & session lingering
   useEffect(() => {
     setEmail('');
     setPassword('');
     setError(null);
+    useAuthStore.getState().logout();
   }, []);
 
   // Lockout Countdown Timer Effect
