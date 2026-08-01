@@ -493,30 +493,29 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
       const catStr = String(category).toLowerCase();
       list = list.filter(p => {
         const slug = ((p.categoryId as any)?.slug || (p.categoryId as any) || '').toString().toLowerCase();
-        const name = ((p.categoryId as any)?.name || '').toString().toLowerCase();
 
         if (catStr === 'decor-pieces' || catStr === 'decor') {
-          return slug.includes('decor') || name.includes('decor');
+          return slug === 'decor' || slug === 'decor-pieces';
         }
         if (catStr === 'furniture') {
-          return slug.includes('chair') || slug.includes('table') || slug.includes('sofa') || name.includes('chair') || name.includes('table') || name.includes('sofa');
+          return slug === 'chairs' || slug === 'tables' || slug === 'sofas';
         }
         if (catStr === 'kitchenware') {
-          return slug.includes('decor') || slug.includes('table') || name.includes('kitchen') || name.includes('decor');
+          return slug === 'decor' || slug === 'tables';
         }
-        if (catStr.includes('light')) {
-          return slug.includes('light') || name.includes('light');
+        if (catStr === 'lighting' || catStr === 'lighting-lamps') {
+          return slug === 'lighting';
         }
-        if (catStr.includes('chair')) {
-          return slug.includes('chair') || name.includes('chair');
+        if (catStr === 'chairs' || catStr === 'chairs-seating') {
+          return slug === 'chairs';
         }
-        if (catStr.includes('table')) {
-          return slug.includes('table') || name.includes('table');
+        if (catStr === 'tables' || catStr === 'dining-tables') {
+          return slug === 'tables';
         }
-        if (catStr.includes('sofa') || catStr.includes('couch')) {
-          return slug.includes('sofa') || name.includes('sofa');
+        if (catStr === 'sofas' || catStr === 'sofas-couches') {
+          return slug === 'sofas';
         }
-        return slug.includes(catStr) || catStr.includes(slug);
+        return slug === catStr;
       });
     }
 
