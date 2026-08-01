@@ -20,7 +20,7 @@ export const ProductListing: React.FC = () => {
   // Filters state
   const [searchVal, setSearchVal] = useState(searchParams.get('search') || '');
   const [selectedCat, setSelectedCat] = useState(searchParams.get('category') || '');
-  const [maxPrice, setMaxPrice] = useState<number>(3000);
+  const [maxPrice, setMaxPrice] = useState<number>(500000);
   const [sortBy, setSortBy] = useState('featured');
 
   useEffect(() => {
@@ -175,13 +175,13 @@ export const ProductListing: React.FC = () => {
           <div className="space-y-3">
             <div className="flex justify-between text-[9px] uppercase tracking-widest font-bold text-brand-clay">
               <span>Max Price</span>
-              <span className="font-mono text-brand-terracotta">₹{maxPrice}</span>
+              <span className="font-mono text-brand-terracotta">₹{maxPrice.toLocaleString()}</span>
             </div>
             <input
               type="range"
-              min="40"
-              max="3000"
-              step="50"
+              min="1000"
+              max="500000"
+              step="5000"
               value={maxPrice}
               onChange={e => setMaxPrice(Number(e.target.value))}
               className="w-full accent-brand-terracotta bg-brand-sand"
@@ -224,7 +224,7 @@ export const ProductListing: React.FC = () => {
               onAction={() => {
                 setSelectedCat('');
                 setSearchVal('');
-                setMaxPrice(3000);
+                setMaxPrice(500000);
                 setSearchParams({});
               }}
             />
