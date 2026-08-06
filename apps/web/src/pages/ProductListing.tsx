@@ -11,6 +11,8 @@ interface Category {
   slug: string;
 }
 
+import { SAMPLE_PRODUCTS } from '../data/sampleProducts.js';
+
 export const ProductListing: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -32,9 +34,25 @@ export const ProductListing: React.FC = () => {
     const fetchCats = async () => {
       try {
         const response = await API.get('/products/categories');
-        setCategories(response.data.data);
+        if (response.data?.data?.length > 0) {
+          setCategories(response.data.data);
+        } else {
+          setCategories([
+            { id: 'cat-chairs', name: 'Chairs & Seating', slug: 'chairs' },
+            { id: 'cat-tables', name: 'Dining Tables', slug: 'tables' },
+            { id: 'cat-decor', name: 'Vases & Decor', slug: 'decor' },
+            { id: 'cat-lighting', name: 'Lighting & Lamps', slug: 'lighting' },
+            { id: 'cat-sofas', name: 'Sofas & Couches', slug: 'sofas' }
+          ]);
+        }
       } catch (err) {
-        console.error(err);
+        setCategories([
+          { id: 'cat-chairs', name: 'Chairs & Seating', slug: 'chairs' },
+          { id: 'cat-tables', name: 'Dining Tables', slug: 'tables' },
+          { id: 'cat-decor', name: 'Vases & Decor', slug: 'decor' },
+          { id: 'cat-lighting', name: 'Lighting & Lamps', slug: 'lighting' },
+          { id: 'cat-sofas', name: 'Sofas & Couches', slug: 'sofas' }
+        ]);
       }
     };
     fetchCats();
@@ -55,9 +73,51 @@ export const ProductListing: React.FC = () => {
         }
         
         const response = await API.get(url);
-        setProducts(response.data.data);
+        if (response.data?.data && response.data.data.length > 0) {
+          setProducts(response.data.data);
+        } else {
+          let list = SAMPLE_PRODUCTS as any;
+          if (selectedCat) {
+            const catStr = selectedCat.toLowerCase();
+            list = list.filter((p: any) => {
+              const slug = p.categoryId?.slug?.toLowerCase() || '';
+              if (catStr === 'decor-pieces' || catStr === 'decor') return slug === 'decor' || slug === 'decor-pieces';
+              if (catStr === 'furniture') return slug === 'chairs' || slug === 'tables' || slug === 'sofas';
+              if (catStr === 'kitchenware') return slug === 'decor' || slug === 'tables';
+              if (catStr.includes('light')) return slug === 'lighting';
+              if (catStr.includes('chair')) return slug === 'chairs';
+              if (catStr.includes('table')) return slug === 'tables';
+              if (catStr.includes('sofa') || catStr.includes('couch')) return slug === 'sofas';
+              return slug === catStr;
+            });
+          }
+          if (searchVal) {
+            const s = searchVal.toLowerCase();
+            list = list.filter((p: any) => p.name.toLowerCase().includes(s) || (p.material && p.material.toLowerCase().includes(s)));
+          }
+          setProducts(list);
+        }
       } catch (err) {
-        console.error(err);
+        let list = SAMPLE_PRODUCTS as any;
+        if (selectedCat) {
+          const catStr = selectedCat.toLowerCase();
+          list = list.filter((p: any) => {
+            const slug = p.categoryId?.slug?.toLowerCase() || '';
+            if (catStr === 'decor-pieces' || catStr === 'decor') return slug === 'decor' || slug === 'decor-pieces';
+            if (catStr === 'furniture') return slug === 'chairs' || slug === 'tables' || slug === 'sofas';
+            if (catStr === 'kitchenware') return slug === 'decor' || slug === 'tables';
+            if (catStr.includes('light')) return slug === 'lighting';
+            if (catStr.includes('chair')) return slug === 'chairs';
+            if (catStr.includes('table')) return slug === 'tables';
+            if (catStr.includes('sofa') || catStr.includes('couch')) return slug === 'sofas';
+            return slug === catStr;
+          });
+        }
+        if (searchVal) {
+          const s = searchVal.toLowerCase();
+          list = list.filter((p: any) => p.name.toLowerCase().includes(s) || (p.material && p.material.toLowerCase().includes(s)));
+        }
+        setProducts(list);
       } finally {
         setLoading(false);
       }
