@@ -272,13 +272,13 @@ export const CatalogModeration: React.FC = () => {
           fetchCatalog();
         } else {
           const newProd = {
+            ...finalPayload,
             _id: `prod-${Date.now()}`,
             id: `prod-${Date.now()}`,
             approvalStatus: 'approved',
-            status: 'active',
+            status: 'active' as const,
             categoryId: categories.find(c => getProductId(c) === data.categoryId) || { name: 'Decor' },
-            vendorId: { businessName: 'Nordic Craft Studio' },
-            ...finalPayload
+            vendorId: { businessName: 'Nordic Craft Studio' }
           };
           setProducts(prev => [newProd as any, ...prev]);
         }
@@ -290,13 +290,13 @@ export const CatalogModeration: React.FC = () => {
         setProducts(prev => prev.map(p => getProductId(p) === targetId ? { ...p, ...finalPayload } : p));
       } else {
         const newProd = {
+          ...finalPayload,
           _id: `prod-${Date.now()}`,
           id: `prod-${Date.now()}`,
           approvalStatus: 'approved',
-          status: 'active',
+          status: 'active' as const,
           categoryId: categories.find(c => getProductId(c) === data.categoryId) || { name: 'Decor' },
-          vendorId: { businessName: 'Nordic Craft Studio' },
-          ...finalPayload
+          vendorId: { businessName: 'Nordic Craft Studio' }
         };
         setProducts(prev => [newProd as any, ...prev]);
       }
