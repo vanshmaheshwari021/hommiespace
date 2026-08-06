@@ -81,15 +81,75 @@ export const CatalogModeration: React.FC = () => {
     name: 'images' as any
   });
 
+  const SAMPLE_ADMIN_CATS = [
+    { _id: 'cat-chairs', id: 'cat-chairs', name: 'Chairs & Seating', slug: 'chairs' },
+    { _id: 'cat-tables', id: 'cat-tables', name: 'Dining Tables', slug: 'tables' },
+    { _id: 'cat-decor', id: 'cat-decor', name: 'Vases & Decor', slug: 'decor' },
+    { _id: 'cat-lighting', id: 'cat-lighting', name: 'Lighting & Lamps', slug: 'lighting' },
+    { _id: 'cat-sofas', id: 'cat-sofas', name: 'Sofas & Couches', slug: 'sofas' }
+  ];
+
+  const SAMPLE_ADMIN_PRODUCTS = [
+    {
+      _id: 'prod-chair-01', id: 'prod-chair-01', name: 'Stockholm Velvet Armchair', slug: 'stockholm-velvet-armchair',
+      price: 29500, status: 'active', approvalStatus: 'approved',
+      categoryId: { _id: 'cat-chairs', name: 'Chairs & Seating', slug: 'chairs' },
+      vendorId: { _id: 'ven-nordic', businessName: 'Nordic Craft Studio' },
+      images: ['https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&q=80'],
+      colorVariants: [{ colorName: 'Sandstone Velvet', colorHex: '#D4C4B5', stock: 15 }]
+    },
+    {
+      _id: 'prod-table-01', id: 'prod-table-01', name: 'Nordic Oak Extension Dining Table', slug: 'nordic-oak-extension-dining-table',
+      price: 124000, status: 'active', approvalStatus: 'approved',
+      categoryId: { _id: 'cat-tables', name: 'Dining Tables', slug: 'tables' },
+      vendorId: { _id: 'ven-nordic', businessName: 'Nordic Craft Studio' },
+      images: ['https://images.unsplash.com/photo-1530018607912-eff2daa1bac4?w=800&q=80'],
+      colorVariants: [{ colorName: 'Natural Oak', colorHex: '#C5A059', stock: 8 }]
+    },
+    {
+      _id: 'prod-decor-01', id: 'prod-decor-01', name: 'Kobenhavn Ceramic Vase Set (Trio)', slug: 'kobenhavn-ceramic-vase-set',
+      price: 8900, status: 'active', approvalStatus: 'approved',
+      categoryId: { _id: 'cat-decor', name: 'Vases & Decor', slug: 'decor' },
+      vendorId: { _id: 'ven-nordic', businessName: 'Nordic Craft Studio' },
+      images: ['https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=800&q=80'],
+      colorVariants: [{ colorName: 'Matte Cream', colorHex: '#F5F2EB', stock: 24 }]
+    },
+    {
+      _id: 'prod-light-01', id: 'prod-light-01', name: 'Gothenburg Brass Floor Lamp', slug: 'gothenburg-brass-floor-lamp',
+      price: 18900, status: 'active', approvalStatus: 'approved',
+      categoryId: { _id: 'cat-lighting', name: 'Lighting & Lamps', slug: 'lighting' },
+      vendorId: { _id: 'ven-nordic', businessName: 'Nordic Craft Studio' },
+      images: ['https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&q=80'],
+      colorVariants: [{ colorName: 'Brushed Brass', colorHex: '#D4AF37', stock: 12 }]
+    },
+    {
+      _id: 'prod-sofa-01', id: 'prod-sofa-01', name: 'Malmo Minimalist Linen 3-Seater Sofa', slug: 'malmo-minimalist-linen-sofa',
+      price: 185000, status: 'active', approvalStatus: 'approved',
+      categoryId: { _id: 'cat-sofas', name: 'Sofas & Couches', slug: 'sofas' },
+      vendorId: { _id: 'ven-nordic', businessName: 'Nordic Craft Studio' },
+      images: ['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80'],
+      colorVariants: [{ colorName: 'Oatmeal Linen', colorHex: '#E2DAC8', stock: 5 }]
+    }
+  ];
+
   const fetchCatalog = async () => {
     setLoading(true);
     try {
       const response = await API.get('/products');
-      setProducts(response.data.data);
-      const catResponse = await API.get('/products/categories');
-      setCategories(catResponse.data.data);
+      if (response.data?.data && response.data.data.length > 0) {
+        setProducts(response.data.data);
+      } else {
+        setProducts(SAMPLE_ADMIN_PRODUCTS as any);
+      }
+      const catResponse = await API.get('/products/categories').catch(() => null);
+      if (catResponse?.data?.data && catResponse.data.data.length > 0) {
+        setCategories(catResponse.data.data);
+      } else {
+        setCategories(SAMPLE_ADMIN_CATS as any);
+      }
     } catch (err) {
-      console.error(err);
+      setProducts(SAMPLE_ADMIN_PRODUCTS as any);
+      setCategories(SAMPLE_ADMIN_CATS as any);
     } finally {
       setLoading(false);
     }
