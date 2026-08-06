@@ -8,9 +8,9 @@
 
 | Account Portal / Service | Full User Name | Role | Login Email / Username | Password | Storefront / Portal URL | Local Dev URL |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **🛍️ Customer Storefront Home** | `Guest Visitor` | Public | N/A | N/A | [https://hommiespace.vercel.app](https://hommiespace.vercel.app) | `http://localhost:5173` |
-| **🛍️ Customer Account Sign In** | `Valued Customer` | Customer | `customer@hommiespace.com` | `password123` | [https://hommiespace.vercel.app/login](https://hommiespace.vercel.app/login) | `http://localhost:5173/login` |
-| **🛍️ Registered Customer Demo** | `Vansh Maheshwari` | Customer | `vansh@example.com` | `password123` | [https://hommiespace.vercel.app/login](https://hommiespace.vercel.app/login) | `http://localhost:5173/login` |
+| **🛍️ Customer Storefront Home** | `Guest Visitor` | Public | N/A | N/A | [https://hommiespace-web.vercel.app](https://hommiespace-web.vercel.app) | `http://localhost:5173` |
+| **🛍️ Customer Account Sign In** | `Valued Customer` | Customer | `customer@hommiespace.com` | `password123` | [https://hommiespace-web.vercel.app/login](https://hommiespace-web.vercel.app/login) | `http://localhost:5173/login` |
+| **🛍️ Registered Customer Demo** | `Vansh Maheshwari` | Customer | `vansh@example.com` | `password123` | [https://hommiespace-web.vercel.app/login](https://hommiespace-web.vercel.app/login) | `http://localhost:5173/login` |
 | **👑 Super Admin Executive Portal** | `Super Administrator` | Super Admin | `admin@hommiespace.com` | `password123` | [https://hommiespace-admin.vercel.app/login](https://hommiespace-admin.vercel.app/login) | `http://localhost:5180/login` |
 | **🏬 Vendor Partner Studio** | `Nordic Craft Studio` | Vendor Partner | `vendor@hommiespace.com` | `password123` | [https://hommiespace-admin.vercel.app/login](https://hommiespace-admin.vercel.app/login) | `http://localhost:5180/login` |
 | **⚙️ Express REST API Backend** | `Backend Service` | API Endpoint | N/A | N/A | [https://hommiespace-api.onrender.com/api](https://hommiespace-api.onrender.com/api) | `http://localhost:5000/api` |
