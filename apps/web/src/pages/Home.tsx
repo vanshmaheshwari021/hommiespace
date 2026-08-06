@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import API from '../api/index.js';
 import type { Product } from '@hommiespace/shared';
 import { Hero3DCanvas } from '../components/Hero3DCanvas.js';
+import { SAMPLE_PRODUCTS } from '../data/sampleProducts.js';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -16,15 +17,21 @@ export const Home: React.FC = () => {
 
   useEffect(() => {
     const fetchFeaturedAndSettings = async () => {
+      setLoading(true);
       try {
-        // Fetch only active products and limit the query size to 8 for fast landing page loads
         const response = await API.get('/products?status=active&limit=8');
-        setFeaturedProducts(response.data.data);
+        if (response.data?.data && response.data.data.length > 0) {
+          setFeaturedProducts(response.data.data);
+        } else {
+          setFeaturedProducts(SAMPLE_PRODUCTS.slice(0, 8) as any);
+        }
         
-        const settingsRes = await API.get('/settings');
-        setSettings(settingsRes.data.data);
+        const settingsRes = await API.get('/settings').catch(() => null);
+        if (settingsRes?.data?.data) {
+          setSettings(settingsRes.data.data);
+        }
       } catch (err) {
-        console.error(err);
+        setFeaturedProducts(SAMPLE_PRODUCTS.slice(0, 8) as any);
       } finally {
         setLoading(false);
       }
