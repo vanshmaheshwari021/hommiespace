@@ -178,7 +178,7 @@ export const CatalogModeration: React.FC = () => {
     setError(null);
 
     // Recalculate global stock from variants sum
-    const totalStock = (data.colorVariants || []).reduce((sum, v) => sum + (v.stock || 0), 0);
+    const totalStock = (data.colorVariants || []).reduce((sum: number, v: any) => sum + (v.stock || 0), 0);
     const rawImages = (data as any).images || [];
     const sanitizedImages = rawImages.map((img: any) => {
       if (typeof img === 'string') return img;

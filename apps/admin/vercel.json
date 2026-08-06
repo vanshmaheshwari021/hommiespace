@@ -1,7 +1,7 @@
 {
   "version": 2,
   "name": "hommiespace-admin-portal",
-  "buildCommand": "npm run build",
+  "buildCommand": "cd ../.. && npm run build --workspace=packages/shared && npm run build --workspace=apps/admin",
   "outputDirectory": "dist",
   "rewrites": [
     {
