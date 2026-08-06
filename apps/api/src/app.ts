@@ -47,6 +47,14 @@ app.use('/api/orders', ordersRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/reports', reportsRoutes);
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', service: 'HommieSpace REST API', version: '1.0.0', environment: env.NODE_ENV });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
